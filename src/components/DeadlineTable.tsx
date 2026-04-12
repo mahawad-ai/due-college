@@ -117,7 +117,7 @@ export default function DeadlineTable({
   function openNoteEditor(deadlineId: string) {
     setEditingNote(deadlineId);
     setNoteValue(deadlineNotes.get(deadlineId) || '');
-    setExpandedNotes((prev) => new Set([...prev, deadlineId]));
+    setExpandedNotes((prev) => { const next = new Set(Array.from(prev)); next.add(deadlineId); return next; });
   }
 
   async function saveNote(deadlineId: string) {

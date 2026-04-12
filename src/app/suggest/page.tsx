@@ -114,7 +114,7 @@ export default function SuggestPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ collegeIds: [data.colleges[0].id] }),
         });
-        setAddedNames(prev => new Set([...prev, collegeName]));
+        setAddedNames(prev => { const next = new Set(Array.from(prev)); next.add(collegeName); return next; });
       }
     } finally {
       setAddingName(null);

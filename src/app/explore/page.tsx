@@ -134,7 +134,7 @@ export default function ExplorePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ collegeIds: [college.id] }),
       });
-      setAddedIds(prev => new Set([...prev, college.id]));
+      setAddedIds(prev => { const next = new Set(Array.from(prev)); next.add(college.id); return next; });
     } finally {
       setAddingId(null);
     }
