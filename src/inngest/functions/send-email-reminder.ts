@@ -5,7 +5,7 @@ import { Resend } from 'resend';
 import { renderDeadlineReminderEmail } from '@/emails/deadline-reminder';
 import { formatDate } from '@/lib/utils';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getResend = () => new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
 const CHECKLISTS: Record<number, string[]> = {
   30: [

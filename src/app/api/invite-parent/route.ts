@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { Resend } from 'resend';
 import { renderParentInviteEmail } from '@/emails/parent-invite';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getResend = () => new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
 export async function POST(req: NextRequest) {
   const { userId } = auth();

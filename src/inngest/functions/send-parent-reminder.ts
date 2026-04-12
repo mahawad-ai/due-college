@@ -5,7 +5,7 @@ import { Resend } from 'resend';
 import twilio from 'twilio';
 import { formatDate } from '@/lib/utils';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getResend = () => new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID!,
   process.env.TWILIO_AUTH_TOKEN!

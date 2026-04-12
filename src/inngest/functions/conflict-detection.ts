@@ -6,7 +6,7 @@ import { parseISO, isFuture } from 'date-fns';
 import { detectConflicts, getDaysRemaining, getUrgency } from '@/lib/utils';
 import type { DeadlineWithCollege } from '@/lib/types';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getResend = () => new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
 export const conflictDetection = inngest.createFunction(
   { id: 'conflict-detection', name: 'Detect Deadline Conflicts' },
