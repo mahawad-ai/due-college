@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>due.college — Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #1a1f36;
+      --coral: #ff6b6b;
+      --yellow: #ffd93d;
+      --green: #6bcb77;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+    }
+    html { font-family: 'Inter', system-ui, sans-serif; background: #f0f2f5; color: var(--navy); }
+    body { min-height: 100vh; }
+
+    /* ── NAV ────────────────────────────────────────────────── */
+    .page-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--navy); padding: 12px 20px;
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    }
+    .page-nav span { color: #fff; font-size: 13px; font-weight: 700; margin-right: 8px; opacity: .6; }
+    .page-btn {
+      background: rgba(255,255,255,.12); border: none; color: #fff;
+      padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: background .15s;
+    }
+    .page-btn:hover, .page-btn.active { background: var(--coral); }
+
+    /* ── PHONE FRAME ────────────────────────────────────────── */
+    .stage {
+      display: flex; align-items: flex-start; justify-content: center;
+      gap: 40px; padding: 80px 24px 40px; flex-wrap: wrap;
+    }
+    .device {
+      background: #1c1c1e; border-radius: 44px; padding: 14px;
+      box-shadow: 0 40px 80px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.06);
+      width: 390px; flex-shrink: 0;
+    }
+    .device-screen {
+      background: #fff; border-radius: 32px; overflow: hidden;
+      height: 780px; position: relative;
+    }
+    .device-notch {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 120px; height: 34px; background: #1c1c1e; border-radius: 0 0 20px 20px; z-index: 10;
+    }
+    .screen { display: none; height: 100%; overflow-y: auto; }
+    .screen.active { display: block; }
+
+    /* scrollbar inside phone */
+    .screen::-webkit-scrollbar { width: 3px; }
+    .screen::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+    /* ── SHARED ATOMS ───────────────────────────────────────── */
+    .logo { font-size: 18px; font-weight: 800; color: var(--navy); letter-spacing: -.5px; }
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 3px 9px; border-radius: 100px;
+    }
+    .badge-coral { background: var(--coral); color: #fff; }
+    .badge-yellow { background: var(--yellow); color: var(--navy); }
+    .badge-green { background: var(--green); color: #fff; }
+    .badge-gray  { background: var(--gray-100); color: var(--gray-500); }
+    .pill {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 100px;
+    }
+    .pill-ed1  { background: #fee2e2; color: #b91c1c; }
+    .pill-ea   { background: #dbeafe; color: #1d4ed8; }
+    .pill-rd   { background: #f3f4f6; color: #374151; }
+    .pill-fafsa{ background: #dcfce7; color: #15803d; }
+    .pill-decision{ background: #ede9fe; color: #6d28d9; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--navy); color: #fff;
+      padding: 6px 12px 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 600;
+    }
+    .chip-x {
+      width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; cursor: pointer; line-height: 1;
+    }
+    .btn-coral {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--coral); color: #fff; border: none; cursor: pointer;
+      font-weight: 700; border-radius: 16px; padding: 14px 24px; font-size: 15px;
+      box-shadow: 0 8px 24px rgba(255,107,107,.28); transition: transform .15s;
+    }
+    .btn-coral:hover { transform: scale(1.02); }
+    .btn-navy {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--navy); color: #fff; border: none; cursor: pointer;
+      font-weight: 700; border-radius: 16px; padding: 14px 24px; font-size: 15px;
+    }
+    .btn-outline-coral {
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 2px solid var(--coral); color: var(--coral); background: transparent;
+      font-weight: 700; border-radius: 14px; padding: 12px 20px; font-size: 14px;
+      cursor: pointer; width: 100%; transition: background .15s;
+    }
+    .btn-outline-coral:hover { background: #fff0f0; }
+    .card {
+      background: #fff; border-radius: 20px; border: 1px solid var(--gray-200);
+      padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .section-header {
+      font-size: 11px; font-weight: 700; color: var(--gray-400);
+      text-transform: uppercase; letter-spacing: .08em;
+      display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
+    }
+    input.search {
+      width: 100%; padding: 14px 14px 14px 44px; font-size: 15px;
+      border: 2px solid var(--gray-200); border-radius: 18px; outline: none;
+      font-family: inherit; transition: border-color .15s;
+    }
+    input.search:focus { border-color: var(--navy); }
+    .search-wrap { position: relative; }
+    .search-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--gray-400); pointer-events: none;
+    }
+
+    /* ── DEADLINE CARD ──────────────────────────────────────── */
+    .deadline-card {
+      background: #fff; border-radius: 18px; border: 1px solid var(--gray-200);
+      border-left: 4px solid var(--gray-200); padding: 14px 14px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04); transition: box-shadow .15s;
+    }
+    .deadline-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+    .deadline-card.urgent  { border-left-color: var(--coral); }
+    .deadline-card.upcoming{ border-left-color: var(--yellow); }
+    .deadline-card.later   { border-left-color: var(--green); }
+    .deadline-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .deadline-card-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+    .deadline-card-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+    .deadline-card-date { font-size: 13px; color: var(--gray-500); }
+    .deadline-card-loc { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+    .mark-btn {
+      font-size: 11px; padding: 4px 10px; border-radius: 100px;
+      border: 1px solid var(--gray-200); background: transparent;
+      color: var(--gray-500); cursor: pointer; font-family: inherit; font-weight: 600;
+      white-space: nowrap; transition: border-color .15s, color .15s;
+    }
+    .mark-btn:hover { border-color: var(--navy); color: var(--navy); }
+    .mark-btn.done { border-color: var(--green); background: #f0fdf4; color: #15803d; }
+
+    /* ── CONFLICT BANNER ────────────────────────────────────── */
+    .conflict-banner {
+      background: #fffbeb; border: 1px solid var(--yellow); border-radius: 16px;
+      padding: 14px 16px; display: flex; gap: 10px; align-items: flex-start;
+    }
+
+    /* ── PRICING CARD ───────────────────────────────────────── */
+    .pricing-card {
+      background: #fff; border-radius: 24px; border: 2px solid var(--gray-200);
+      padding: 22px; position: relative;
+    }
+    .pricing-card.popular { border-color: var(--coral); box-shadow: 0 8px 32px rgba(255,107,107,.12); }
+    .pricing-card .most-popular {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--coral); color: #fff; font-size: 11px; font-weight: 800;
+      padding: 4px 14px; border-radius: 100px; white-space: nowrap;
+    }
+    .pricing-price { font-size: 36px; font-weight: 800; color: var(--navy); }
+    .pricing-period { font-size: 13px; color: var(--gray-400); }
+    .pricing-feature {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 13px; color: #374151; padding: 5px 0;
+    }
+    .pricing-feature .check { color: var(--green); font-weight: 700; }
+    .pricing-feature .cross { color: var(--gray-200); font-weight: 700; }
+
+    /* ── MOBILE NAV ─────────────────────────────────────────── */
+    .mobile-nav {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 1px solid var(--gray-200);
+      display: flex; justify-content: space-around; padding: 8px 0 12px;
+      z-index: 20;
+    }
+    .mobile-nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      font-size: 10px; font-weight: 600; color: var(--gray-400); cursor: pointer;
+      padding: 4px 16px;
+    }
+    .mobile-nav-item.active { color: var(--navy); }
+    .mobile-nav-item svg { width: 22px; height: 22px; }
+
+    /* ── TOGGLE ─────────────────────────────────────────────── */
+    .toggle {
+      width: 44px; height: 24px; border-radius: 100px;
+      background: var(--navy); position: relative; cursor: pointer; flex-shrink: 0;
+    }
+    .toggle::after {
+      content: ''; position: absolute; width: 20px; height: 20px;
+      background: #fff; border-radius: 50%; top: 2px; right: 2px; transition: right .2s;
+    }
+    .toggle.off { background: var(--gray-200); }
+    .toggle.off::after { right: auto; left: 2px; }
+
+    /* ── LABEL ──────────────────────────────────────────────── */
+    .label-xs {
+      font-size: 10px; font-weight: 600; color: var(--gray-400);
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+
+    /* ── SCREEN PADDING ─────────────────────────────────────── */
+    .p-screen { padding: 48px 16px 88px; }
+    .p-screen-top { padding: 48px 16px 20px; }
+  </style>
+</head>
+<body>
+
+<!-- Page switcher nav -->
+<nav class="page-nav">
+  <span>due.college</span>
+  <button class="page-btn active" onclick="show('home')">Home</button>
+  <button class="page-btn" onclick="show('dashboard')">Dashboard</button>
+  <button class="page-btn" onclick="show('school')">School Detail</button>
+  <button class="page-btn" onclick="show('upgrade')">Upgrade</button>
+  <button class="page-btn" onclick="show('settings')">Settings</button>
+  <button class="page-btn" onclick="show('parent')">Parent View</button>
+  <button class="page-btn" onclick="show('invite')">Invite Parent</button>
+  <button class="page-btn" onclick="show('activities')">Activities</button>
+</nav>
+
+<div class="stage">
+  <div class="device">
+    <div class="device-screen">
+      <div class="device-notch"></div>
+
+      <!-- ══════════════════════════════════════════ -->
+      <!-- SCREEN 1: HOME                            -->
+      <!-- ══════════════════════════════════════════ -->
+      <div class="screen active" id="screen-home">
+        <div style="padding: 52px 20px 40px; background:#fff; min-height:100%">
+          <!-- Logo -->
+          <div style="text-align:center; margin-bottom:32px">
+            <span class="logo">due.college</span>
+          </div>
+
+          <!-- Headline -->
+          <h1 style="font-size:28px; font-weight:800; color:var(--navy); text-align:center; line-height:1.2; margin-bottom:10px">
+            Make sure you actually hit every deadline
+          </h1>
+          <p style="text-align:center; color:var(--gray-500); font-size:15px; margin-bottom:28px">
+            Add your colleges. We handle the rest.
+          </p>
+
+          <!-- Search -->
+          <div class="search-wrap" style="margin-bottom:16px">
+            <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input class="search" placeholder="Search a college..." />
+          </div>
+
+          <!-- Selected chips -->
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px">
+            <span class="chip">Harvard University <span class="chip-x">×</span></span>
+            <span class="chip">Stanford University <span class="chip-x">×</span></span>
+            <span class="chip">NYU <span class="chip-x">×</span></span>
+          </div>
+
+          <!-- CTA -->
+          <div style="text-align:center; margin-bottom:28px">
+            <button class="btn-coral" style="width:100%; justify-content:center">
+              See My Deadlines
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </button>
+            <p style="font-size:12px; color:var(--gray-400); margin-top:8px">3 schools selected</p>
+          </div>
+
+          <!-- Popular schools -->
+          <p class="label-xs" style="margin-bottom:10px">Popular schools</p>
+          <div style="display:flex; flex-wrap:wrap; gap:8px">
+            <button style="font-size:12px; background:var(--gray-100); border:none; color:var(--gray-500); padding:6px 12px; border-radius:100px; cursor:pointer; font-family:inherit">Harvard</button>
+            <button style="font-size:12px; background:var(--gray-100); border:none; color:var(--gray-500); padding:6px 12px; border-radius:100px; cursor:pointer; font-family:inherit">Stanford</button>
+            <button style="font-size:12px; background:var(--gray-100); border:none; color:var(--gray-500); padding:6px 12px; border-radius:100px; cursor:pointer; font-family:inherit">UCLA</button>
+            <button style="font-size:12px; background:var(--gray-100); border:none; color:var(--gray-500); padding:6px 12px; border-radius:100px; cursor:pointer; font-family:inherit">NYU</button>
+            <button style="font-size:12px; background:var(--gray-100); border:none; color:var(--gray-500); padding:6px 12px; border-radius:100px; cursor:pointer; font-family:inherit">Michigan</button>
+            <button style="font-size:12px; background:var(--gray-100); border:none; color:var(--gray-500); padding:6px 12px; border-radius:100px; cursor:pointer; font-family:inherit">Duke</button>
+            <button style="font-size:12px; background:var(--gray-100); border:none; color:var(--gray-500); padding:6px 12px; border-radius:100px; cursor:pointer; font-family:inherit">Georgetown</button>
+          </div>
+
+          <!-- Features -->
+          <div style="margin-top:40px; border-top:1px solid var(--gray-100); padding-top:32px; display:flex; flex-direction:column; gap:20px">
+            <div style="display:flex; gap:14px; align-items:flex-start">
+              <span style="font-size:28px">📅</span>
+              <div><p style="font-weight:700; font-size:14px; color:var(--navy)">Every deadline in one place</p><p style="font-size:12px; color:var(--gray-500); margin-top:2px">ED1, EA, RD, FAFSA — color-coded by urgency.</p></div>
+            </div>
+            <div style="display:flex; gap:14px; align-items:flex-start">
+              <span style="font-size:28px">⏰</span>
+              <div><p style="font-weight:700; font-size:14px; color:var(--navy)">Reminders before it matters</p><p style="font-size:12px; color:var(--gray-500); margin-top:2px">Email + SMS at 30, 14, 7, 3, and 1 day before.</p></div>
+            </div>
+            <div style="display:flex; gap:14px; align-items:flex-start">
+              <span style="font-size:28px">👪</span>
+              <div><p style="font-weight:700; font-size:14px; color:var(--navy)">Keep parents in the loop</p><p style="font-size:12px; color:var(--gray-500); margin-top:2px">Share a read-only dashboard. They'll thank you.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ -->
+      <!-- SCREEN 2: DASHBOARD                       -->
+      <!-- ══════════════════════════════════════════ -->
+      <div class="screen" id="screen-dashboard">
+        <div style="background:var(--gray-50); min-height:100%; padding:48px 16px 88px">
+
+          <!-- Header -->
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px">
+            <div>
+              <span class="logo" style="font-size:14px; display:block; margin-bottom:4px">due.college</span>
+              <h1 style="font-size:22px; font-weight:800; color:var(--navy)">Your College Deadlines</h1>
+              <p style="font-size:12px; color:var(--gray-500); margin-top:2px">3 schools · Next deadline in <strong style="color:var(--coral)">5 days</strong></p>
+            </div>
+            <div style="width:38px; height:38px; border-radius:50%; background:var(--navy); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:14px; flex-shrink:0">J</div>
+          </div>
+
+          <!-- Conflict banner -->
+          <div class="conflict-banner" style="margin-bottom:16px">
+            <span style="font-size:20px; flex-shrink:0">⚠️</span>
+            <div>
+              <p style="font-weight:700; font-size:13px; color:var(--navy)">Heads up — you have 3 deadlines in the week of Nov 1</p>
+              <p style="font-size:12px; color:var(--gray-500); margin-top:2px">Start early so you're not rushing multiple apps at once.</p>
+            </div>
+          </div>
+
+          <!-- URGENT -->
+          <div class="section-header"><span>🔴</span> Urgent — under 7 days</div>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px">
+
+            <div class="deadline-card urgent">
+              <div class="deadline-card-top">
+                <div>
+                  <div class="deadline-card-title">Harvard University</div>
+                  <div class="deadline-card-meta">
+                    <span class="pill pill-ed1">REA</span>
+                    <span class="deadline-card-date">Nov 1, 2026</span>
+                  </div>
+                  <div class="deadline-card-loc">Cambridge, MA</div>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0">
+                  <span class="badge badge-coral">5 days</span>
+                  <button class="mark-btn">Mark done</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="deadline-card urgent">
+              <div class="deadline-card-top">
+                <div>
+                  <div class="deadline-card-title">Stanford University</div>
+                  <div class="deadline-card-meta">
+                    <span class="pill pill-ed1">REA</span>
+                    <span class="deadline-card-date">Nov 1, 2026</span>
+                  </div>
+                  <div class="deadline-card-loc">Stanford, CA</div>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0">
+                  <span class="badge badge-coral">5 days</span>
+                  <button class="mark-btn">Mark done</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- COMING UP -->
+          <div class="section-header"><span>🟡</span> Coming Up — 7 to 30 days</div>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px">
+
+            <div class="deadline-card upcoming">
+              <div class="deadline-card-top">
+                <div>
+                  <div class="deadline-card-title">NYU</div>
+                  <div class="deadline-card-meta">
+                    <span class="pill pill-ed1">ED1</span>
+                    <span class="deadline-card-date">Nov 1, 2026</span>
+                  </div>
+                  <div class="deadline-card-loc">New York, NY</div>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0">
+                  <span class="badge badge-yellow">14 days</span>
+                  <button class="mark-btn">Mark done</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="deadline-card upcoming" style="opacity:.7">
+              <div class="deadline-card-top">
+                <div>
+                  <div class="deadline-card-title">Duke University</div>
+                  <div class="deadline-card-meta">
+                    <span class="pill pill-fafsa">FAFSA</span>
+                    <span class="deadline-card-date">Nov 1, 2026</span>
+                  </div>
+                  <div class="deadline-card-loc">Durham, NC</div>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0">
+                  <span class="badge badge-green" style="background:#dcfce7; color:#15803d">✓ Done</span>
+                  <button class="mark-btn done">✓ Submitted</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- LATER -->
+          <div class="section-header"><span>🟢</span> Later — over 30 days</div>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:24px">
+
+            <div class="deadline-card later">
+              <div class="deadline-card-top">
+                <div>
+                  <div class="deadline-card-title">Harvard University</div>
+                  <div class="deadline-card-meta">
+                    <span class="pill pill-rd">RD</span>
+                    <span class="deadline-card-date">Jan 1, 2027</span>
+                  </div>
+                </div>
+                <div style="flex-shrink:0">
+                  <span class="badge badge-green">87 days</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="deadline-card later">
+              <div class="deadline-card-top">
+                <div>
+                  <div class="deadline-card-title">Stanford University</div>
+                  <div class="deadline-card-meta">
+                    <span class="pill pill-rd">RD</span>
+                    <span class="deadline-card-date">Jan 2, 2027</span>
+                  </div>
+                </div>
+                <div style="flex-shrink:0">
+                  <span class="badge badge-green">88 days</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom actions -->
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <button style="width:100%; padding:13px; border:2px solid var(--gray-200); border-radius:14px; font-weight:700; font-size:14px; background:#fff; cursor:pointer; font-family:inherit; color:var(--navy)">
+              + Add another school
+            </button>
+            <button class="btn-outline-coral">Invite Parent</button>
+          </div>
+        </div>
+
+        <!-- Mobile nav -->
+        <div class="mobile-nav">
+          <div class="mobile-nav-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            Home
+          </div>
+          <div class="mobile-nav-item active">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Dashboard
+          </div>
+          <div class="mobile-nav-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Settings
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ -->
+      <!-- SCREEN 3: SCHOOL DETAIL                   -->
+      <!-- ══════════════════════════════════════════ -->
+      <div class="screen" id="screen-school">
+        <div style="background:var(--gray-50); min-height:100%; padding:48px 16px 88px">
+
+          <a style="display:inline-flex; align-items:center; gap:5px; font-size:13px; color:var(--gray-500); font-weight:600; margin-bottom:18px; cursor:pointer">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Back to dashboard
+          </a>
+
+          <!-- College header -->
+          <div class="card" style="margin-bottom:16px">
+            <h1 style="font-size:22px; font-weight:800; color:var(--navy); margin-bottom:4px">Harvard University</h1>
+            <p style="font-size:13px; color:var(--gray-500)">Cambridge, MA</p>
+            <div style="display:flex; gap:10px; margin-top:12px; align-items:center">
+              <a style="font-size:13px; color:#2563eb; font-weight:600; cursor:pointer">Visit website →</a>
+              <span style="background:#dbeafe; color:#1d4ed8; font-size:11px; font-weight:700; padding:2px 8px; border-radius:100px">Common App</span>
+            </div>
+          </div>
+
+          <!-- Deadline table -->
+          <h2 style="font-size:16px; font-weight:700; color:var(--navy); margin-bottom:10px">Application Deadlines</h2>
+          <div style="background:#fff; border-radius:16px; border:1px solid var(--gray-200); overflow:hidden; margin-bottom:16px">
+            <table style="width:100%; border-collapse:collapse; font-size:13px">
+              <thead>
+                <tr style="background:var(--gray-50); border-bottom:1px solid var(--gray-200)">
+                  <th style="padding:10px 12px; text-align:left; font-size:11px; color:var(--gray-400); font-weight:600; text-transform:uppercase; letter-spacing:.04em">Type</th>
+                  <th style="padding:10px 12px; text-align:left; font-size:11px; color:var(--gray-400); font-weight:600; text-transform:uppercase; letter-spacing:.04em">Date</th>
+                  <th style="padding:10px 12px; text-align:right; font-size:11px; color:var(--gray-400); font-weight:600; text-transform:uppercase; letter-spacing:.04em">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom:1px solid var(--gray-100)">
+                  <td style="padding:11px 12px"><span class="pill pill-ed1">REA</span></td>
+                  <td style="padding:11px 12px; color:var(--navy); font-weight:600">Nov 1, 2026<br><span style="font-size:11px; color:var(--gray-400); font-weight:400">11:59 PM ET</span></td>
+                  <td style="padding:11px 12px; text-align:right">
+                    <span class="badge badge-coral" style="font-size:11px">5 days</span>
+                  </td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--gray-100)">
+                  <td style="padding:11px 12px"><span class="pill pill-rd">RD</span></td>
+                  <td style="padding:11px 12px; color:var(--navy); font-weight:600">Jan 1, 2027<br><span style="font-size:11px; color:var(--gray-400); font-weight:400">11:59 PM ET</span></td>
+                  <td style="padding:11px 12px; text-align:right">
+                    <span class="badge badge-green">87 days</span>
+                  </td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--gray-100)">
+                  <td style="padding:11px 12px"><span class="pill pill-fafsa">FAFSA</span></td>
+                  <td style="padding:11px 12px; color:var(--navy); font-weight:600">Oct 1, 2026</td>
+                  <td style="padding:11px 12px; text-align:right">
+                    <span style="background:#dcfce7; color:#15803d; font-size:11px; font-weight:700; padding:3px 9px; border-radius:100px">✓ Done</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:11px 12px"><span class="pill pill-decision">Decision</span></td>
+                  <td style="padding:11px 12px; color:var(--navy); font-weight:600">Dec 15, 2026</td>
+                  <td style="padding:11px 12px; text-align:right">
+                    <span class="badge badge-green">49 days</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Upgrade nudge -->
+          <div style="background:#fffbeb; border:1px solid var(--yellow); border-radius:14px; padding:14px; margin-bottom:16px">
+            <p style="font-size:13px; font-weight:600; color:var(--navy)">📅 Upgrade to Plus to export to Google Calendar</p>
+            <p style="font-size:12px; color:var(--coral); font-weight:700; margin-top:4px; cursor:pointer">Upgrade for $4.99/month →</p>
+          </div>
+
+          <!-- Affiliate -->
+          <div class="card">
+            <p style="font-size:12px; font-weight:700; color:var(--navy); margin-bottom:10px">Resources</p>
+            <div style="background:#fef3f2; border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center">
+              <div>
+                <p style="font-size:13px; font-weight:600; color:var(--navy)">Harvard REA is in 5 days.<br>Last-minute essay review?</p>
+                <p style="font-size:11px; color:var(--gray-400); margin-top:2px">Free peer feedback + expert coaches</p>
+              </div>
+              <span style="font-size:13px; font-weight:700; color:var(--coral); white-space:nowrap; margin-left:10px">CollegeVine →</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mobile-nav">
+          <div class="mobile-nav-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            Home
+          </div>
+          <div class="mobile-nav-item active">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Dashboard
+          </div>
+          <div class="mobile-nav-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Settings
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ -->
+      <!-- SCREEN 4: UPGRADE / PRICING               -->
+      <!-- ══════════════════════════════════════════ -->
+      <div class="screen" id="screen-upgrade">
+        <div style="background:var(--gray-50); min-height:100%; padding:48px 16px 40px">
+          <p style="font-size:13px; color:var(--gray-500); margin-bottom:4px">← Back to dashboard</p>
+          <h1 style="font-size:22px; font-weight:800; color:var(--navy); margin-bottom:4px">Simple, honest pricing</h1>
+          <p style="font-size:13px; color:var(--gray-500); margin-bottom:24px">Start free. Upgrade when you're ready.</p>
+
+          <div style="display:flex; flex-direction:column; gap:16px">
+
+            <!-- FREE -->
+            <div class="pricing-card">
+              <p style="font-size:12px; font-weight:800; color:var(--navy); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px">Free</p>
+              <div style="display:flex; align-items:baseline; gap:4px; margin-bottom:16px">
+                <span class="pricing-price">$0</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:2px; margin-bottom:16px">
+                <div class="pricing-feature"><span class="check">✓</span> Email reminders</div>
+                <div class="pricing-feature"><span class="check">✓</span> Up to 10 schools</div>
+                <div class="pricing-feature"><span class="check">✓</span> Deadline dashboard</div>
+                <div class="pricing-feature"><span class="check">✓</span> Parent read-only view</div>
+                <div class="pricing-feature"><span class="cross">✗</span> <span style="color:var(--gray-400); text-decoration:line-through">SMS reminders</span></div>
+              </div>
+              <button style="width:100%; padding:12px; background:var(--gray-100); border:none; border-radius:12px; font-weight:700; font-size:14px; color:var(--gray-400); font-family:inherit">Current Plan</button>
+            </div>
+
+            <!-- PLUS -->
+            <div class="pricing-card">
+              <p style="font-size:12px; font-weight:800; color:var(--navy); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px">Plus</p>
+              <div style="display:flex; align-items:baseline; gap:4px; margin-bottom:16px">
+                <span class="pricing-price">$4.99</span>
+                <span class="pricing-period">/month</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:2px; margin-bottom:16px">
+                <div class="pricing-feature"><span class="check">✓</span> Everything in Free</div>
+                <div class="pricing-feature"><span class="check">✓</span> SMS reminders for student</div>
+                <div class="pricing-feature"><span class="check">✓</span> Unlimited schools</div>
+                <div class="pricing-feature"><span class="check">✓</span> Google Calendar export</div>
+                <div class="pricing-feature"><span class="check">✓</span> Conflict alerts</div>
+              </div>
+              <button class="btn-navy" style="width:100%; justify-content:center; border-radius:12px; font-size:14px">Upgrade to Plus</button>
+            </div>
+
+            <!-- FAMILY -->
+            <div class="pricing-card popular" style="margin-top:12px">
+              <div class="most-popular">Most Popular</div>
+              <p style="font-size:12px; font-weight:800; color:var(--navy); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px">Family</p>
+              <div style="display:flex; align-items:baseline; gap:4px; margin-bottom:16px">
+                <span class="pricing-price">$7.99</span>
+                <span class="pricing-period">/month</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:2px; margin-bottom:16px">
+                <div class="pricing-feature"><span class="check">✓</span> Everything in Plus</div>
+                <div class="pricing-feature"><span class="check">✓</span> SMS reminders for parent</div>
+                <div class="pricing-feature"><span class="check">✓</span> Parent dashboard access</div>
+                <div class="pricing-feature"><span class="check">✓</span> Weekly family summary</div>
+                <div class="pricing-feature"><span class="check">✓</span> Every Sunday recap email</div>
+              </div>
+              <button class="btn-coral" style="width:100%; justify-content:center; border-radius:12px; font-size:14px">Upgrade to Family</button>
+            </div>
+
+          </div>
+
+          <p style="text-align:center; font-size:12px; color:var(--gray-400); margin-top:20px">
+            Cancel any time · No hidden fees
+          </p>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ -->
+      <!-- SCREEN 5: SETTINGS                        -->
+      <!-- ══════════════════════════════════════════ -->
+      <div class="screen" id="screen-settings">
+        <div style="background:var(--gray-50); min-height:100%; padding:48px 16px 88px">
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+            <div>
+              <p style="font-size:12px; color:var(--gray-500); margin-bottom:2px">← Dashboard</p>
+              <h1 style="font-size:22px; font-weight:800; color:var(--navy)">Settings</h1>
+            </div>
+            <div style="width:38px; height:38px; border-radius:50%; background:var(--navy); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:14px">J</div>
+          </div>
+
+          <!-- Profile -->
+          <div class="card" style="margin-bottom:12px">
+            <h2 style="font-size:14px; font-weight:700; color:var(--navy); margin-bottom:14px">Profile</h2>
+            <div style="margin-bottom:10px">
+              <p class="label-xs">Name</p>
+              <p style="font-weight:600; color:var(--navy); margin-top:2px">Jordan Smith</p>
+            </div>
+            <div style="margin-bottom:14px">
+              <p class="label-xs">Email</p>
+              <p style="font-weight:600; color:var(--navy); margin-top:2px">jordan@example.com</p>
+            </div>
+            <div>
+              <p class="label-xs" style="margin-bottom:6px">Phone Number</p>
+              <div style="display:flex; gap:8px">
+                <input type="tel" placeholder="+1 (555) 555-5555" style="flex:1; padding:10px 12px; border:2px solid var(--gray-200); border-radius:10px; font-family:inherit; font-size:13px; outline:none"/>
+                <button class="btn-navy" style="padding:10px 16px; font-size:13px; border-radius:10px">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notifications -->
+          <div class="card" style="margin-bottom:12px">
+            <h2 style="font-size:14px; font-weight:700; color:var(--navy); margin-bottom:14px">Notifications</h2>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--gray-100)">
+              <div>
+                <p style="font-size:13px; font-weight:600; color:var(--navy)">Email reminders</p>
+                <p style="font-size:11px; color:var(--gray-400)">Always enabled</p>
+              </div>
+              <div class="toggle" style="opacity:.5"></div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--gray-100)">
+              <div>
+                <p style="font-size:13px; font-weight:600; color:var(--navy)">SMS reminders</p>
+                <p style="font-size:11px; color:var(--gray-400)">Requires Plus or Family plan</p>
+              </div>
+              <div class="toggle off"></div>
+            </div>
+
+            <p class="label-xs" style="margin:14px 0 8px">Remind me...</p>
+
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <div style="display:flex; justify-content:space-between; align-items:center">
+                <span style="font-size:13px; color:var(--navy)">30 days before</span>
+                <div class="toggle"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center">
+                <span style="font-size:13px; color:var(--navy)">14 days before</span>
+                <div class="toggle"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center">
+                <span style="font-size:13px; color:var(--navy)">7 days before</span>
+                <div class="toggle"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center">
+                <span style="font-size:13px; color:var(--navy)">3 days before</span>
+                <div class="toggle"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center">
+                <span style="font-size:13px; color:var(--navy)">1 day before</span>
+                <div class="toggle"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subscription -->
+          <div class="card" style="margin-bottom:12px">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+              <h2 style="font-size:14px; font-weight:700; color:var(--navy)">Subscription</h2>
+              <span style="background:#fff0f0; color:var(--coral); font-size:12px; font-weight:700; padding:4px 12px; border-radius:100px">Free</span>
+            </div>
+            <button class="btn-outline-coral" style="font-size:13px; padding:10px">Upgrade plan</button>
+          </div>
+
+          <!-- Danger -->
+          <div class="card">
+            <h2 style="font-size:14px; font-weight:700; color:var(--navy); margin-bottom:10px">Account</h2>
+            <button style="background:none; border:none; font-size:13px; color:#ef4444; font-weight:600; cursor:pointer; font-family:inherit; padding:0">Delete account</button>
+          </div>
+        </div>
+
+        <div class="mobile-nav">
+          <div class="mobile-nav-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            Home
+          </div>
+          <div class="mobile-nav-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Dashboard
+          </div>
+          <div class="mobile-nav-item active">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Settings
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ -->
+      <!-- SCREEN 6: PARENT VIEW                     -->
+      <!-- ══════════════════════════════════════════ -->
+      <div class="screen" id="screen-parent">
+        <div style="background:var(--gray-50); min-height:100%; padding:48px 16px 40px">
+          <div style="margin-bottom:16px">
+            <span class="logo" style="display:block; margin-bottom:6px">due.college</span>
+            <h1 style="font-size:20px; font-weight:800; color:var(--navy)">Jordan's College Deadlines</h1>
+            <p style="font-size:12px; color:var(--gray-500); margin-top:2px">3 schools · Next deadline in <strong style="color:var(--coral)">5 days</strong></p>
+            <span style="display:inline-flex; align-items:center; gap:4px; background:var(--gray-100); color:var(--gray-500); font-size:11px; font-weight:600; padding:4px 10px; border-radius:100px; margin-top:6px">
+              <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              Read-only view
+            </span>
+          </div>
+
+          <!-- SMS opt-in -->
+          <div class="card" style="margin-bottom:16px">
+            <p style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:4px">Get SMS reminders</p>
+            <p style="font-size:12px; color:var(--gray-400); margin-bottom:10px">Receive the same reminders as Jordan.</p>
+            <div style="display:flex; gap:8px">
+              <input type="tel" placeholder="+1 (555) 555-5555" style="flex:1; padding:10px 12px; border:1px solid var(--gray-200); border-radius:10px; font-size:13px; outline:none; font-family:inherit"/>
+              <button class="btn-coral" style="padding:10px 14px; font-size:13px; border-radius:10px">Enable SMS</button>
+            </div>
+          </div>
+
+          <div class="section-header"><span>🔴</span> Urgent</div>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px">
+            <div class="deadline-card urgent">
+              <div class="deadline-card-top">
+                <div>
+                  <div class="deadline-card-title">Harvard University</div>
+                  <div class="deadline-card-meta"><span class="pill pill-ed1">REA</span><span class="deadline-card-date">Nov 1, 2026</span></div>
+                </div>
+                <span class="badge badge-coral">5 days</span>
+              </div>
+            </div>
+            <div class="deadline-card urgent">
+              <div class="deadline-card-top">
+                <div>
+                  <div class="deadline-card-title">Stanford University</div>
+                  <div class="deadline-card-meta"><span class="pill pill-ed1">REA</span><span class="deadline-card-date">Nov 1, 2026</span></div>
+                </div>
+                <span class="badge badge-coral">5 days</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-header"><span>🟢</span> Later</div>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:24px">
+            <div class="deadline-card later">
+              <div class="deadline-card-top">
+                <div>
+                  <div class="deadline-card-title">NYU</div>
+                  <div class="deadline-card-meta"><span class="pill pill-rd">RD</span><span class="deadline-card-date">Jan 5, 2027</span></div>
+                </div>
+                <span class="badge badge-green">91 days</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align:center; padding:16px 0">
+            <p style="font-size:11px; color:var(--gray-400)">Powered by <strong style="color:var(--navy)">due.college</strong> · Free college deadline tracker</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ -->
+      <!-- SCREEN 7: INVITE PARENT                   -->
+      <!-- ══════════════════════════════════════════ -->
+      <div class="screen" id="screen-invite">
+        <div style="background:#fff; min-height:100%; padding:48px 16px 40px">
+          <p style="font-size:12px; color:var(--gray-500); margin-bottom:20px; cursor:pointer">← Back</p>
+
+          <div style="text-align:center; margin-bottom:28px">
+            <span style="font-size:40px; display:block; margin-bottom:10px">👪</span>
+            <h1 style="font-size:22px; font-weight:800; color:var(--navy); margin-bottom:6px">Invite a Parent</h1>
+            <p style="font-size:13px; color:var(--gray-500)">They'll get a read-only view of your deadlines and can opt in for SMS reminders.</p>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:16px">
+            <div>
+              <label style="display:block; font-size:12px; font-weight:700; color:var(--navy); margin-bottom:6px">Parent's Name *</label>
+              <input type="text" placeholder="Mom / Dad / Guardian" style="width:100%; padding:13px 14px; border:2px solid var(--gray-200); border-radius:12px; font-size:14px; outline:none; font-family:inherit; transition:border-color .15s"/>
+            </div>
+            <div>
+              <label style="display:block; font-size:12px; font-weight:700; color:var(--navy); margin-bottom:6px">Parent's Email *</label>
+              <input type="email" placeholder="parent@email.com" style="width:100%; padding:13px 14px; border:2px solid var(--gray-200); border-radius:12px; font-size:14px; outline:none; font-family:inherit"/>
+            </div>
+            <div>
+              <label style="display:block; font-size:12px; font-weight:700; color:var(--navy); margin-bottom:4px">Parent's Phone <span style="font-weight:400; color:var(--gray-400)">(optional)</span></label>
+              <input type="tel" placeholder="+1 (555) 555-5555" style="width:100%; padding:13px 14px; border:2px solid var(--gray-200); border-radius:12px; font-size:14px; outline:none; font-family:inherit"/>
+            </div>
+
+            <button class="btn-coral" style="width:100%; justify-content:center; margin-top:4px; border-radius:14px">
+              Send Invite Email
+            </button>
+          </div>
+
+          <p style="font-size:11px; color:var(--gray-400); text-align:center; margin-top:16px">
+            Your parent can only view your deadlines, not edit them.<br>SMS reminders require a Family plan.
+          </p>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ -->
+      <!-- SCREEN 8: ACTIVITIES                      -->
+      <!-- ══════════════════════════════════════════ -->
+      <div class="screen" id="screen-activities">
+        <div style="background:var(--gray-50); min-height:100%; padding:48px 16px 100px">
+
+          <!-- Header -->
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px">
+            <div>
+              <p style="font-size:12px; color:var(--gray-500); margin-bottom:4px; cursor:pointer">← Dashboard</p>
+              <h1 style="font-size:22px; font-weight:800; color:var(--navy)">Activities & Experience</h1>
+              <p style="font-size:12px; color:var(--gray-400); margin-top:2px">4 activities · ~12 hrs/week</p>
+            </div>
+            <div style="width:36px; height:36px; border-radius:50%; background:var(--gray-200)"></div>
+          </div>
+
+          <!-- Stats row -->
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px">
+            <div class="card" style="padding:12px; text-align:center; border-radius:16px">
+              <div style="font-size:20px; margin-bottom:4px">🤝</div>
+              <div style="font-size:18px; font-weight:800; color:var(--navy)">2</div>
+              <div style="font-size:10px; color:var(--gray-400)">Volunteering</div>
+            </div>
+            <div class="card" style="padding:12px; text-align:center; border-radius:16px">
+              <div style="font-size:20px; margin-bottom:4px">💼</div>
+              <div style="font-size:18px; font-weight:800; color:var(--navy)">1</div>
+              <div style="font-size:10px; color:var(--gray-400)">Internship</div>
+            </div>
+            <div class="card" style="padding:12px; text-align:center; border-radius:16px">
+              <div style="font-size:20px; margin-bottom:4px">🎭</div>
+              <div style="font-size:18px; font-weight:800; color:var(--navy)">1</div>
+              <div style="font-size:10px; color:var(--gray-400)">Extracurricular</div>
+            </div>
+          </div>
+
+          <!-- Filter chips -->
+          <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:14px">
+            <button style="flex-shrink:0; font-size:11px; font-weight:700; padding:6px 12px; border-radius:100px; background:var(--navy); color:#fff; border:none; cursor:pointer">All (4)</button>
+            <button style="flex-shrink:0; font-size:11px; font-weight:600; padding:6px 12px; border-radius:100px; background:#fff; color:var(--gray-500); border:1px solid var(--gray-200); cursor:pointer">🤝 Volunteering (2)</button>
+            <button style="flex-shrink:0; font-size:11px; font-weight:600; padding:6px 12px; border-radius:100px; background:#fff; color:var(--gray-500); border:1px solid var(--gray-200); cursor:pointer">💼 Internship (1)</button>
+          </div>
+
+          <!-- Activity cards -->
+          <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:14px">
+
+            <!-- Card 1 -->
+            <div class="card" style="border-radius:18px">
+              <div style="display:flex; gap:12px; align-items:flex-start">
+                <span style="font-size:24px; flex-shrink:0; margin-top:2px">🤝</span>
+                <div style="flex:1; min-width:0">
+                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:2px">
+                    <span style="font-size:14px; font-weight:700; color:var(--navy)">Food Bank Tutor</span>
+                    <span style="font-size:10px; font-weight:700; padding:2px 8px; border-radius:100px; background:#dcfce7; color:#15803d">Volunteering</span>
+                  </div>
+                  <p style="font-size:12px; color:var(--gray-500); margin-bottom:4px">City Food Bank</p>
+                  <p style="font-size:11px; color:var(--gray-400)">Weekly Volunteer</p>
+                  <div style="display:flex; gap:12px; margin-top:6px">
+                    <span style="font-size:11px; color:var(--gray-400)">Jun 2024 – Present</span>
+                    <span style="font-size:11px; color:var(--gray-400)">4 hrs/week</span>
+                  </div>
+                  <p style="font-size:12px; color:var(--gray-500); margin-top:8px; line-height:1.5">Helped adults improve reading and math skills. Mentored 6 students over 8 months, all improved by 1+ grade level.</p>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; flex-shrink:0">
+                  <button style="font-size:11px; color:#2563eb; font-weight:600; background:none; border:none; cursor:pointer; padding:4px 6px">Edit</button>
+                  <button style="font-size:11px; color:#ef4444; font-weight:600; background:none; border:none; cursor:pointer; padding:4px 6px">Delete</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card" style="border-radius:18px">
+              <div style="display:flex; gap:12px; align-items:flex-start">
+                <span style="font-size:24px; flex-shrink:0; margin-top:2px">💼</span>
+                <div style="flex:1; min-width:0">
+                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:2px">
+                    <span style="font-size:14px; font-weight:700; color:var(--navy)">Software Engineering Intern</span>
+                    <span style="font-size:10px; font-weight:700; padding:2px 8px; border-radius:100px; background:#dbeafe; color:#1d4ed8">Internship</span>
+                  </div>
+                  <p style="font-size:12px; color:var(--gray-500); margin-bottom:4px">Acme Corp</p>
+                  <p style="font-size:11px; color:var(--gray-400)">Summer Intern</p>
+                  <div style="display:flex; gap:12px; margin-top:6px">
+                    <span style="font-size:11px; color:var(--gray-400)">Jun 2024 – Aug 2024</span>
+                    <span style="font-size:11px; color:var(--gray-400)">40 hrs/week</span>
+                  </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; flex-shrink:0">
+                  <button style="font-size:11px; color:#2563eb; font-weight:600; background:none; border:none; cursor:pointer; padding:4px 6px">Edit</button>
+                  <button style="font-size:11px; color:#ef4444; font-weight:600; background:none; border:none; cursor:pointer; padding:4px 6px">Delete</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="card" style="border-radius:18px">
+              <div style="display:flex; gap:12px; align-items:flex-start">
+                <span style="font-size:24px; flex-shrink:0; margin-top:2px">🎭</span>
+                <div style="flex:1; min-width:0">
+                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:2px">
+                    <span style="font-size:14px; font-weight:700; color:var(--navy)">Debate Team Captain</span>
+                    <span style="font-size:10px; font-weight:700; padding:2px 8px; border-radius:100px; background:#ede9fe; color:#6d28d9">Extracurricular</span>
+                  </div>
+                  <p style="font-size:12px; color:var(--gray-500); margin-bottom:4px">Lincoln High School</p>
+                  <div style="display:flex; gap:12px; margin-top:6px">
+                    <span style="font-size:11px; color:var(--gray-400)">Sep 2022 – Present</span>
+                    <span style="font-size:11px; color:var(--gray-400)">6 hrs/week</span>
+                  </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; flex-shrink:0">
+                  <button style="font-size:11px; color:#2563eb; font-weight:600; background:none; border:none; cursor:pointer; padding:4px 6px">Edit</button>
+                  <button style="font-size:11px; color:#ef4444; font-weight:600; background:none; border:none; cursor:pointer; padding:4px 6px">Delete</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Add button -->
+          <button style="width:100%; padding:12px; border:2px dashed var(--gray-200); border-radius:16px; background:transparent; font-size:13px; font-weight:600; color:var(--gray-400); cursor:pointer; font-family:inherit">
+            + Add another activity
+          </button>
+        </div>
+
+        <!-- Mobile Nav (4 items) -->
+        <div class="mobile-nav">
+          <div class="mobile-nav-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            Home
+          </div>
+          <div class="mobile-nav-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Deadlines
+          </div>
+          <div class="mobile-nav-item active">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            Activities
+          </div>
+          <div class="mobile-nav-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Settings
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /device-screen -->
+  </div><!-- /device -->
+</div><!-- /stage -->
+
+<script>
+  function show(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    event.target.classList.add('active');
+    // scroll back to top
+    document.getElementById('screen-' + name).scrollTop = 0;
+  }
+</script>
+</body>
+</html>
