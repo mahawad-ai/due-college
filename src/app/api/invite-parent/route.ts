@@ -24,7 +24,12 @@ export async function POST(req: NextRequest) {
     .select('college:colleges(name)')
     .eq('user_id', userId);
 
-  const colleges = (userColleges || []).map((uc: { college: { name: string } | null }) => uc.college?.name || '').filter(Boolean);
+  const colleges = (userColleges || []).map((uc: { college: { name: string }[] | { name: string } | null }) => {
+    const col = uc.college;
+    if (!col) return '';
+    if (Array.isArray(col)) return col[0]?.name || '';
+    return col.name || '';
+  }).filter(Boolean);
 
   // Create or update parent connection
   const { data: connection, error } = await supabase
