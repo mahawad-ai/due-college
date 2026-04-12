@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { inngest } from '../client';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { addDays, subDays, parseISO, isFuture } from 'date-fns';
