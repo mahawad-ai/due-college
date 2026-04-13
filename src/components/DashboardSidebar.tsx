@@ -15,6 +15,10 @@ const navItems = [
   { name: 'Test Scores', path: '/test-scores', icon: '📝' },
   { name: 'Scholarships', path: '/scholarships', icon: '💰' },
   { name: 'Decisions', path: '/decisions', icon: '✔️' },
+  { name: '---', path: '', icon: '' },
+  { name: 'College Discovery', path: '/discover/profile', icon: '🎓' },
+  { name: 'Search Colleges', path: '/discover/search', icon: '🔍' },
+  { name: '---', path: '', icon: '' },
   { name: 'More', path: '/more', icon: '⚙️' },
 ];
 
@@ -33,22 +37,26 @@ export default function DashboardSidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
         <ul className="space-y-2">
-          {navItems.map((item) => (
-            <li key={item.path}>
-              <Link
-                href={item.path}
-                className={cn(
-                  'flex items-center gap-3 px-4 py-2 rounded-lg transition-colors',
-                  pathname === item.path || pathname.startsWith(item.path)
-                    ? 'bg-coral text-white font-semibold'
-                    : 'text-blue-100 hover:bg-navy/50'
-                )}
-              >
-                <span className="text-lg">{item.icon}</span>
-                <span>{item.name}</span>
-              </Link>
-            </li>
-          ))}
+          {navItems.map((item) =>
+            item.name === '---' ? (
+              <li key={Math.random()} className="my-3 border-t border-navy/30" />
+            ) : (
+              <li key={item.path}>
+                <Link
+                  href={item.path}
+                  className={cn(
+                    'flex items-center gap-3 px-4 py-2 rounded-lg transition-colors',
+                    pathname === item.path || pathname.startsWith(item.path)
+                      ? 'bg-coral text-white font-semibold'
+                      : 'text-blue-100 hover:bg-navy/50'
+                  )}
+                >
+                  <span className="text-lg">{item.icon}</span>
+                  <span>{item.name}</span>
+                </Link>
+              </li>
+            )
+          )}
         </ul>
       </nav>
 
