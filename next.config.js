@@ -9,12 +9,6 @@ const nextConfig = {
   images: {
     domains: ['img.clerk.com', 'images.clerk.dev'],
   },
-  async rewrites() {
-    return [
-      { source: '/start/:path*', destination: '/start' },
-      { source: '/login/:path*', destination: '/login' },
-    ];
-  },
   async headers() {
     return [
       {
