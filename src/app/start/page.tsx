@@ -25,6 +25,8 @@ export default function StartPage() {
         {/* Clerk Sign-Up */}
         <div className="flex justify-center">
           <SignUp
+            routing="path"
+            path="/start"
             appearance={{
               elements: {
                 rootBox: 'w-full max-w-md',
