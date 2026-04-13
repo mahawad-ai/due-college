@@ -18,6 +18,8 @@ const navItems = [
   { name: '---', path: '', icon: '' },
   { name: 'College Discovery', path: '/discover/profile', icon: '🎓' },
   { name: 'Search Colleges', path: '/discover/search', icon: '🔍' },
+  { name: 'AI Recommendations', path: '/discover/recommendations', icon: '🤖' },
+  { name: 'App Feedback', path: '/discover/feedback', icon: '💡' },
   { name: '---', path: '', icon: '' },
   { name: 'More', path: '/more', icon: '⚙️' },
 ];

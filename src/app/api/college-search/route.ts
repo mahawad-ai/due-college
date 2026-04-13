@@ -3,6 +3,16 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
+
+  // Single college fetch by id
+  const id = searchParams.get('id');
+  if (id) {
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase.from('colleges').select('*').eq('id', id).single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 404 });
+    return NextResponse.json({ college: data });
+  }
+
   const satMin = searchParams.get('sat_min') ? parseInt(searchParams.get('sat_min')!) : null;
   const satMax = searchParams.get('sat_max') ? parseInt(searchParams.get('sat_max')!) : null;
   const acceptanceRateMax = searchParams.get('acceptance_rate_max')
