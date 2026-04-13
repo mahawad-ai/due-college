@@ -20,7 +20,8 @@ export default function LoginPage() {
 
         <div className="flex justify-center">
           <SignIn
-            routing="hash"
+            routing="path"
+            path="/login"
             appearance={{
               elements: {
                 rootBox: 'w-full max-w-md',
