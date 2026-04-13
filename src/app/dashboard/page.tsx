@@ -7,6 +7,7 @@ import Link from 'next/link';
 import DeadlineCard from '@/components/DeadlineCard';
 import ConflictAlert from '@/components/ConflictAlert';
 import MobileNav from '@/components/MobileNav';
+import DashboardSidebar from '@/components/DashboardSidebar';
 import { DeadlineWithCollege, College } from '@/lib/types';
 import { getDaysRemaining, getUrgency, sortDeadlinesByUrgency, groupDeadlinesByUrgency, detectConflicts, cn } from '@/lib/utils';
 
@@ -115,8 +116,9 @@ export default function DashboardPage() {
 
   return (
     <>
-      <main className="min-h-screen bg-gray-50 pb-24">
-        <div className="max-w-container mx-auto px-4 py-6">
+      <DashboardSidebar />
+      <main className="min-h-screen bg-gray-50 pb-24 ml-64">
+        <div className="max-w-6xl mx-auto px-4 py-6">
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div>
