@@ -3,31 +3,47 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const q = searchParams.get('q') || '';
-  const type = searchParams.get('type');
-  const region = searchParams.get('region');
-  const setting = searchParams.get('setting');
-  const maxAcceptance = searchParams.get('maxAcceptance');
-  const minSAT = searchParams.get('minSAT');
-  const maxTuition = searchParams.get('maxTuition');
-  const limit = parseInt(searchParams.get('limit') || '20');
+  const satMin = searchParams.get('sat_min') ? parseInt(searchParams.get('sat_min')!) : null;
+  const satMax = searchParams.get('sat_max') ? parseInt(searchParams.get('sat_max')!) : null;
+  const acceptanceRateMax = searchParams.get('acceptance_rate_max')
+    ? parseInt(searchParams.get('acceptance_rate_max')!) / 100
+    : null;
+  const size = searchParams.get('size');
+  const location = searchParams.get('location');
+  const major = searchParams.get('major');
 
   const supabase = createServerSupabaseClient();
+
   let query = supabase
     .from('colleges')
-    .select('id,name,city,state,type,region,setting,acceptance_rate,avg_gpa,sat_25,sat_75,act_25,act_75,tuition_in_state,tuition_out_state,enrollment,common_app,website')
-    .order('acceptance_rate', { ascending: true, nullsFirst: false })
-    .limit(limit);
+    .select('*')
+    .order('acceptance_rate', { ascending: true });
 
-  if (q) query = query.ilike('name', `%${q}%`);
-  if (type) query = query.eq('type', type);
-  if (region) query = query.eq('region', region);
-  if (setting) query = query.eq('setting', setting);
-  if (maxAcceptance) query = query.lte('acceptance_rate', parseFloat(maxAcceptance));
-  if (minSAT) query = query.gte('sat_25', parseInt(minSAT));
-  if (maxTuition) query = query.lte('tuition_out_state', parseInt(maxTuition));
+  if (satMin) {
+    query = query.gte('sat_75th', satMin);
+  }
+  if (satMax) {
+    query = query.lte('sat_25th', satMax);
+  }
+  if (acceptanceRateMax) {
+    query = query.lte('acceptance_rate', acceptanceRateMax);
+  }
+  if (size) {
+    query = query.eq('size', size);
+  }
+  if (location) {
+    query = query.ilike('location', `%${location}%`);
+  }
+  if (major) {
+    query = query.contains('majors_offered', [major]);
+  }
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  if (error) {
+    console.error('College search error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
   return NextResponse.json({ colleges: data || [] });
 }
