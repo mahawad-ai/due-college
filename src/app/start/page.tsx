@@ -22,8 +22,7 @@ export default function StartPage() {
         </div>
         <div className="flex justify-center">
           <SignUp
-            routing="path"
-            path="/start"
+            routing="hash"
             redirectUrl="/dashboard"
             afterSignUpUrl="/dashboard"
             appearance={{
