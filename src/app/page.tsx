@@ -44,17 +44,25 @@ export default function HomePage() {
 
       {/* Nav */}
       <nav style={{ background: 'rgba(255,255,255,0.88)', backdropFilter: 'saturate(180%) blur(24px)', WebkitBackdropFilter: 'saturate(180%) blur(24px)', borderBottom: '1px solid rgba(0,0,0,0.07)' }}
-        className="sticky top-0 z-50 h-[52px] flex items-center justify-center">
+        className="sticky top-0 z-50 h-[56px] flex items-center justify-center">
         <div className="max-w-[1080px] w-full px-6 flex items-center justify-between">
+          {/* Wordmark */}
           <div className="flex items-baseline">
             <span className="text-[19px] font-[800] tracking-[-1px] text-[#1d1d1f]">due</span>
             <span className="text-[22px] font-[800] text-[#ff3b30] leading-none relative top-[1px]">.</span>
             <span className="text-[17px] font-[400] tracking-[-0.3px] text-[#1d1d1f]">college</span>
           </div>
-          <Link href="/login"
-            className="text-[13px] font-[500] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors no-underline min-h-0">
-            Sign in
-          </Link>
+          {/* Auth buttons */}
+          <div className="flex items-center gap-3">
+            <Link href="/login"
+              className="text-[14px] font-[500] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors no-underline px-3 py-1.5">
+              Sign in
+            </Link>
+            <Link href="/start"
+              className="text-[14px] font-[600] text-white bg-[#ff3b30] hover:opacity-85 transition-opacity no-underline px-4 py-2 rounded-full">
+              Get started free
+            </Link>
+          </div>
         </div>
       </nav>
 
