@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
   // Send parent invite email
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: 'due.college <reminders@due.college>',
       to: email,
       subject: `${studentName} added you to their college deadline tracker`,

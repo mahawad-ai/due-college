@@ -1,17 +1,21 @@
-'use client';
+/**
+ * Download university logos to public/college-logos/
+ *
+ * Sources (tried in order): DuckDuckGo icons, Google favicons, direct domain /favicon.ico
+ * Saves each as PNG/ICO at public/college-logos/{slug}.png
+ *
+ * Run once: node scripts/download-logos.js
+ */
 
-import { useState } from 'react';
+const fs = require('fs');
+const path = require('path');
+const https = require('https');
 
-interface CollegeLogoProps {
-  name: string;
-  website?: string | null;
-  size?: 'sm' | 'md' | 'lg';
-}
+const OUT_DIR = path.join(__dirname, '..', 'public', 'college-logos');
+if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
 
-// Full domain map for all 243 colleges
-const DOMAIN_MAP: Record<string, string> = {
-  // 002_seed_data.sql schools (50)
-  'Harvard University': 'college.harvard.edu',
+const DOMAIN_MAP = {
+  'Harvard University': 'harvard.edu',
   'Massachusetts Institute of Technology': 'mit.edu',
   'Stanford University': 'stanford.edu',
   'Yale University': 'yale.edu',
@@ -61,7 +65,6 @@ const DOMAIN_MAP: Record<string, string> = {
   'University of Oregon': 'uoregon.edu',
   'Rutgers University': 'rutgers.edu',
   'Duke University': 'duke.edu',
-  // 009 & 010 schools
   'Wake Forest University': 'wfu.edu',
   'University of Rochester': 'rochester.edu',
   'Case Western Reserve University': 'case.edu',
@@ -241,121 +244,75 @@ const DOMAIN_MAP: Record<string, string> = {
   'Saint Anselm College': 'anselm.edu',
 };
 
-// Brand colors for prominent schools
-const BRAND_COLORS: Record<string, string> = {
-  'Harvard University': '#A51C30',
-  'Stanford University': '#8C1515',
-  'Massachusetts Institute of Technology': '#750014',
-  'Yale University': '#00356B',
-  'Princeton University': '#E77500',
-  'Columbia University': '#1D4F91',
-  'University of Pennsylvania': '#011F5B',
-  'Dartmouth College': '#00693E',
-  'Brown University': '#4E3629',
-  'Cornell University': '#B31B1B',
-  'Duke University': '#003087',
-  'Northwestern University': '#4E2A84',
-  'Vanderbilt University': '#866D4B',
-  'University of Notre Dame': '#0C2340',
-  'Georgetown University': '#041E42',
-  'Emory University': '#012169',
-  'University of Southern California': '#990000',
-  'New York University': '#57068C',
-  'University of California, Los Angeles': '#003B5C',
-  'University of California, Berkeley': '#003262',
-  'University of Michigan': '#00274C',
-  'University of North Carolina at Chapel Hill': '#4B9CD3',
-  'University of Virginia': '#232D4B',
-  'Georgia Institute of Technology': '#B3A369',
-  'Howard University': '#003A63',
-  'Spelman College': '#002868',
-  'Morehouse College': '#8B0000',
-  'Hampton University': '#003A63',
-  'Clark Atlanta University': '#003A63',
-};
-
-function getDeterministicColor(name: string): string {
-  const first = name.charAt(0).toUpperCase();
-  if (first >= 'A' && first <= 'E') return '#1d1d1f';
-  if (first >= 'F' && first <= 'J') return '#003087';
-  if (first >= 'K' && first <= 'O') return '#4E2A84';
-  if (first >= 'P' && first <= 'T') return '#A51C30';
-  return '#006341';
-}
-
-function getBgColor(name: string): string {
-  return BRAND_COLORS[name] ?? getDeterministicColor(name);
-}
-
-function extractDomain(website: string): string {
-  return website.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
-}
-
-function slugify(name: string): string {
+function slugify(name) {
   return name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
 
-const SIZE_CLASSES = {
-  sm: 'w-8 h-8 rounded-lg',
-  md: 'w-10 h-10 rounded-xl',
-  lg: 'w-14 h-14 rounded-xl',
-};
-
-const FONT_SIZES = {
-  sm: 'text-[12px]',
-  md: 'text-[14px]',
-  lg: 'text-[22px]',
-};
-
-export default function CollegeLogo({ name, website, size = 'md' }: CollegeLogoProps) {
-  // Tier 0: local file by slug. Tier 1: DuckDuckGo by domain. Tier 2: colored initial.
-  const [tier, setTier] = useState<0 | 1 | 2>(0);
-
-  const initial = name.charAt(0).toUpperCase();
-  const bgColor = getBgColor(name);
-  const sizeClass = SIZE_CLASSES[size];
-  const fontSize = FONT_SIZES[size];
-
-  // Resolve domain for tier 1 fallback
-  let domain: string | null = null;
-  if (website) {
-    domain = extractDomain(website);
-  } else if (DOMAIN_MAP[name]) {
-    domain = DOMAIN_MAP[name];
-  }
-
-  // Pick src based on tier
-  let src: string | null = null;
-  if (tier === 0) {
-    src = `/college-logos/${slugify(name)}.png`;
-  } else if (tier === 1 && domain) {
-    src = `https://icons.duckduckgo.com/ip3/${domain}.ico`;
-  }
-
-  if (!src || tier === 2) {
-    return (
-      <div
-        className={`${sizeClass} flex items-center justify-center shrink-0 shadow-sm`}
-        style={{ backgroundColor: bgColor }}
-      >
-        <span className={`text-white ${fontSize} font-[800]`}>{initial}</span>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`${sizeClass} overflow-hidden flex items-center justify-center shrink-0 shadow-sm bg-white`}
-    >
-      <img
-        src={src}
-        alt={name}
-        className="w-full h-full object-contain p-[3px]"
-        onError={() => setTier((t) => (t < 2 ? ((t + 1) as 0 | 1 | 2) : 2))}
-      />
-    </div>
-  );
+function fetchBuffer(url) {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, { timeout: 10000, headers: { 'User-Agent': 'Mozilla/5.0 due.college-logo-bot' } }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        return fetchBuffer(res.headers.location).then(resolve).catch(reject);
+      }
+      if (res.statusCode !== 200) {
+        return reject(new Error(`HTTP ${res.statusCode}`));
+      }
+      const chunks = [];
+      res.on('data', (c) => chunks.push(c));
+      res.on('end', () => resolve(Buffer.concat(chunks)));
+    });
+    req.on('timeout', () => { req.destroy(new Error('timeout')); });
+    req.on('error', reject);
+  });
 }
+
+async function tryFetch(domain) {
+  const sources = [
+    `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+    `https://${domain}/favicon.ico`,
+  ];
+  for (const src of sources) {
+    try {
+      const buf = await fetchBuffer(src);
+      if (buf.length >= 200) return { buf, src };
+    } catch (_) {}
+  }
+  return null;
+}
+
+async function main() {
+  const entries = Object.entries(DOMAIN_MAP);
+  console.log(`Downloading ${entries.length} university logos...`);
+  let ok = 0, fail = 0;
+  const failures = [];
+
+  for (const [name, domain] of entries) {
+    const slug = slugify(name);
+    const outPath = path.join(OUT_DIR, `${slug}.png`);
+    if (fs.existsSync(outPath) && fs.statSync(outPath).size >= 200) {
+      ok++;
+      continue;
+    }
+    const result = await tryFetch(domain);
+    if (result) {
+      fs.writeFileSync(outPath, result.buf);
+      ok++;
+      process.stdout.write('.');
+    } else {
+      fail++;
+      failures.push(name);
+      process.stdout.write('x');
+    }
+  }
+
+  console.log(`\n\nDone. ${ok} ok, ${fail} failed.`);
+  if (failures.length) {
+    console.log('Failed:', failures.join(', '));
+  }
+}
+
+main().catch(console.error);

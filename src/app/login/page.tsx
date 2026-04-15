@@ -36,7 +36,6 @@ export default function LoginPage() {
               },
             }}
             fallbackRedirectUrl="/dashboard"
-            fallbackRedirectUrl="/dashboard"
           />
         </div>
 
