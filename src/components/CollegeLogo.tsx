@@ -299,15 +299,15 @@ function slugify(name: string): string {
 }
 
 const SIZE_CLASSES = {
-  sm: 'w-8 h-8 rounded-lg',
-  md: 'w-10 h-10 rounded-xl',
-  lg: 'w-14 h-14 rounded-xl',
+  sm: 'w-10 h-10 rounded-lg',
+  md: 'w-12 h-12 rounded-xl',
+  lg: 'w-20 h-20 rounded-2xl',
 };
 
 const FONT_SIZES = {
-  sm: 'text-[12px]',
-  md: 'text-[14px]',
-  lg: 'text-[22px]',
+  sm: 'text-[15px]',
+  md: 'text-[18px]',
+  lg: 'text-[32px]',
 };
 
 export default function CollegeLogo({ name, website, size = 'md' }: CollegeLogoProps) {
@@ -353,7 +353,7 @@ export default function CollegeLogo({ name, website, size = 'md' }: CollegeLogoP
       <img
         src={src}
         alt={name}
-        className="w-full h-full object-contain p-[3px]"
+        className="w-full h-full object-contain p-[2px]"
         onError={() => setTier((t) => (t < 2 ? ((t + 1) as 0 | 1 | 2) : 2))}
       />
     </div>
