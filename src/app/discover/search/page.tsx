@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import TopNav from '@/components/TopNav';
+import CollegeLogo from '@/components/CollegeLogo';
 
 interface College {
   id: string;
@@ -17,62 +18,6 @@ interface College {
   majors_offered: string[];
 }
 
-const uniDomains: Record<string, { domain: string; color: string }> = {
-  Stanford: { domain: 'stanford.edu', color: '#8C1515' },
-  Harvard: { domain: 'harvard.edu', color: '#A51C30' },
-  MIT: { domain: 'mit.edu', color: '#750014' },
-  Yale: { domain: 'yale.edu', color: '#00356B' },
-  Princeton: { domain: 'princeton.edu', color: '#FF6900' },
-  Columbia: { domain: 'columbia.edu', color: '#003DA5' },
-  UPenn: { domain: 'upenn.edu', color: '#011F5B' },
-  Duke: { domain: 'duke.edu', color: '#003087' },
-  Northwestern: { domain: 'northwestern.edu', color: '#4E2A84' },
-  Michigan: { domain: 'umich.edu', color: '#00274C' },
-};
-
-function getUniMeta(name: string): { domain: string; color: string } | null {
-  for (const [key, val] of Object.entries(uniDomains)) {
-    if (name.toLowerCase().includes(key.toLowerCase())) return val;
-  }
-  return null;
-}
-
-function CollegeLogo({ name }: { name: string }) {
-  const [imgError, setImgError] = useState(false);
-  const meta = getUniMeta(name);
-  const initials = name
-    .split(' ')
-    .filter((w) => w.length > 2)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('');
-
-  const bgColor = meta?.color ?? '#1d1d1f';
-
-  if (meta && !imgError) {
-    return (
-      <div
-        className="w-12 h-12 rounded-[13px] flex items-center justify-center overflow-hidden shrink-0"
-        style={{ backgroundColor: bgColor }}
-      >
-        <img
-          src={`https://logo.clearbit.com/${meta.domain}`}
-          alt={name}
-          className="w-8 h-8 object-contain"
-          onError={() => setImgError(true)}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="w-12 h-12 rounded-[13px] flex items-center justify-center shrink-0"
-      style={{ backgroundColor: bgColor }}
-    >
-      <span className="text-white text-[13px] font-[700]">{initials || name[0]}</span>
-    </div>
-  );
 }
 
 const inputClass =

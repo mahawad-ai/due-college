@@ -34,8 +34,8 @@ export default function LoginPage() {
                 footerActionLink: 'text-coral',
               },
             }}
-            redirectUrl="/dashboard"
-            afterSignInUrl="/dashboard"
+            fallbackRedirectUrl="/dashboard"
+            fallbackRedirectUrl="/dashboard"
           />
         </div>
 

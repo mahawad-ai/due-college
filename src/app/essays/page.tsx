@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import TopNav from '@/components/TopNav';
 import MobileNav from '@/components/MobileNav';
+import CollegeLogo from '@/components/CollegeLogo';
 import { Essay, EssayType, EssayStatus } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -336,8 +337,6 @@ function EssayRow({
 }) {
   const cfg = STATUS_CONFIG[essay.status];
   const typeLabel = ESSAY_TYPES.find(t => t.value === essay.type)?.label || essay.type;
-  const uniInfo = getUniLogo(essay.college_name || '');
-  const initial = (essay.college_name || typeLabel).charAt(0).toUpperCase();
 
   // Derive a rough word count from notes or default to 0 when not tracked
   const wordCount = 0;
@@ -351,28 +350,7 @@ function EssayRow({
         onClick={onToggle}
       >
         {/* University logo badge */}
-        <div
-          className="w-12 h-12 rounded-[13px] flex items-center justify-center flex-shrink-0 overflow-hidden"
-          style={{ backgroundColor: uniInfo.color }}
-        >
-          {uniInfo.domain ? (
-            <img
-              src={`https://logo.clearbit.com/${uniInfo.domain}`}
-              alt={essay.college_name || ''}
-              className="w-8 h-8 object-contain"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = 'none';
-                (e.currentTarget.nextSibling as HTMLElement).style.display = 'flex';
-              }}
-            />
-          ) : null}
-          <span
-            className="text-white text-[18px] font-[700] hidden items-center justify-center w-full h-full"
-            style={{ display: uniInfo.domain ? 'none' : 'flex' }}
-          >
-            {initial}
-          </span>
-        </div>
+        <CollegeLogo name={essay.college_name || typeLabel} size="md" />
 
         {/* Content */}
         <div className="flex-1 min-w-0">

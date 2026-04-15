@@ -336,7 +336,7 @@ export default function CollegeLogo({ name, website, size = 'md' }: CollegeLogoP
       style={{ backgroundColor: bgColor }}
     >
       <img
-        src={`https://logo.clearbit.com/${domain}?size=80`}
+        src={`https://logo.clearbit.com/${domain}`}
         alt={name}
         className="w-full h-full object-contain p-[3px]"
         onError={() => setImgFailed(true)}
