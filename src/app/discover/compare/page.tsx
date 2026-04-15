@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import DashboardSidebar from '@/components/DashboardSidebar';
+import TopNav from '@/components/TopNav';
+import MobileNav from '@/components/MobileNav';
 
 type College = {
   id: string;
@@ -34,7 +35,7 @@ const badgeColors: Record<string, string> = {
 
 function CompareCell({ value, best, isBest }: { value: string; best: boolean; isBest: boolean }) {
   return (
-    <td className={`px-4 py-3 text-center text-sm font-medium ${isBest ? 'text-green-600 bg-green-50' : 'text-gray-700'}`}>
+    <td className={`px-4 py-3 text-center text-sm font-[500] ${isBest ? 'text-green-600 bg-green-50' : 'text-[#1d1d1f]'}`}>
       {value}
     </td>
   );
@@ -87,30 +88,37 @@ export default function ComparePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
-        <DashboardSidebar />
-        <main className="ml-64 flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-navy" />
+      <>
+        <TopNav />
+        <main className="min-h-screen bg-white pt-[90px] pb-28 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff3b30]" />
         </main>
-      </div>
+        <MobileNav />
+      </>
     );
   }
 
   if (ids.length === 0) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
-        <DashboardSidebar />
-        <main className="ml-64 flex-1 p-8">
-          <h1 className="text-2xl font-bold text-navy mb-4">Compare Colleges</h1>
-          <p className="text-gray-500">
-            Add colleges to compare by visiting a college page and using the compare feature, or navigate to{' '}
-            <code className="bg-gray-100 px-2 py-1 rounded">/discover/compare?ids=id1,id2,id3</code>
-          </p>
-          <Link href="/discover/search" className="mt-4 inline-block bg-coral text-white px-6 py-2 rounded-lg font-semibold">
-            Search Colleges
-          </Link>
+      <>
+        <TopNav />
+        <main className="min-h-screen bg-white pt-[90px] pb-28">
+          <div className="max-w-[860px] mx-auto px-6 py-8 page-fade">
+            <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">College Discovery</p>
+            <h1 className="text-[40px] font-[800] tracking-[-2px] text-[#1d1d1f] mb-2">
+              Compare<br /><span className="text-[#ff3b30]">Side by side.</span>
+            </h1>
+            <p className="text-[16px] text-[#6e6e73] mb-10">
+              Add colleges to compare by visiting a college page, or navigate to{' '}
+              <code className="bg-[#f5f5f7] px-2 py-1 rounded-lg text-sm">/discover/compare?ids=id1,id2,id3</code>
+            </p>
+            <Link href="/discover/search" className="bg-[#ff3b30] text-white px-6 py-3 rounded-xl font-[600] hover:opacity-85 transition-opacity inline-block">
+              Search Colleges
+            </Link>
+          </div>
         </main>
-      </div>
+        <MobileNav />
+      </>
     );
   }
 
@@ -174,42 +182,49 @@ export default function ComparePage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <DashboardSidebar />
-      <main className="ml-64 flex-1 p-8">
-        <h1 className="text-2xl font-bold text-navy mb-6">Compare Colleges</h1>
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-navy text-white">
-                <th className="px-4 py-3 text-left text-sm font-semibold w-40">Metric</th>
-                {colleges.map((c) => (
-                  <th key={c.id} className="px-4 py-3 text-center text-sm font-semibold">
-                    <div>{c.name}</div>
-                    <div className="text-xs text-blue-200 font-normal">{c.location}</div>
-                    {c.match_type && (
-                      <span className={`text-xs font-bold uppercase ${badgeColors[c.match_type] || 'text-blue-200'}`}>
-                        {c.match_type}
-                      </span>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, ri) => (
-                <tr key={row.label} className={ri % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-600">{row.label}</td>
-                  {row.values.map((val, ci) => (
-                    <CompareCell key={ci} value={val} best={row.best === ci} isBest={row.best === ci} />
+    <>
+      <TopNav />
+      <main className="min-h-screen bg-white pt-[90px] pb-28">
+        <div className="max-w-[860px] mx-auto px-6 py-8 page-fade">
+          <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">College Discovery</p>
+          <h1 className="text-[40px] font-[800] tracking-[-2px] text-[#1d1d1f] mb-8">
+            Compare<br /><span className="text-[#ff3b30]">Side by side.</span>
+          </h1>
+
+          <div className="bg-[#f5f5f7] rounded-3xl overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-[#1d1d1f] text-white">
+                  <th className="px-4 py-4 text-left text-[11px] font-[700] uppercase tracking-[0.7px] w-40">Metric</th>
+                  {colleges.map((c) => (
+                    <th key={c.id} className="px-4 py-4 text-center text-sm font-[600]">
+                      <div className="text-white">{c.name}</div>
+                      <div className="text-[#86868b] text-xs font-[400] mt-0.5">{c.location}</div>
+                      {c.match_type && (
+                        <span className={`text-xs font-[700] uppercase ${badgeColors[c.match_type] || 'text-[#86868b]'}`}>
+                          {c.match_type}
+                        </span>
+                      )}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((row, ri) => (
+                  <tr key={row.label} className={ri % 2 === 0 ? 'bg-white' : 'bg-[#f5f5f7]'}>
+                    <td className="px-4 py-3 text-sm font-[600] text-[#86868b]">{row.label}</td>
+                    {row.values.map((val, ci) => (
+                      <CompareCell key={ci} value={val} best={row.best === ci} isBest={row.best === ci} />
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-[#86868b] mt-3">Green highlights indicate the best value for each metric.</p>
         </div>
-        <p className="text-xs text-gray-400 mt-3">Green highlights indicate the best value for each metric.</p>
       </main>
-    </div>
+      <MobileNav />
+    </>
   );
 }

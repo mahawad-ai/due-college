@@ -10,14 +10,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        navy: '#1a1f36',
-        coral: '#ff6b6b',
-        yellow: '#ffd93d',
-        green: '#6bcb77',
-        'navy-light': '#2d3561',
-        'coral-light': '#fff0f0',
-        'yellow-light': '#fffbeb',
-        'green-light': '#f0fdf4',
+        // New Apple-inspired palette
+        ink: '#1d1d1f',
+        coral: '#ff3b30',
+        'coral-light': 'rgba(255,59,48,0.08)',
+        'gray-1': '#424245',
+        'gray-2': '#6e6e73',
+        'gray-3': '#86868b',
+        'gray-4': '#aeaeb2',
+        'gray-5': '#d2d2d7',
+        'gray-6': '#e8e8ed',
+        'gray-7': '#f5f5f7',
+        // Legacy (kept for backward compat)
+        navy: '#1d1d1f',
+        'navy-light': '#424245',
+        yellow: '#ff9f0a',
+        green: '#34c759',
+        'yellow-light': 'rgba(255,159,10,0.1)',
+        'green-light': 'rgba(52,199,89,0.1)',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

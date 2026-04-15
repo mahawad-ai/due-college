@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import DashboardSidebar from '@/components/DashboardSidebar';
+import TopNav from '@/components/TopNav';
 
 type CollegeRec = {
   id: string;
@@ -13,16 +13,79 @@ type CollegeRec = {
 };
 
 const badgeStyles: Record<string, string> = {
-  reach: 'bg-red-100 text-red-700 border border-red-200',
-  target: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
-  likely: 'bg-green-100 text-green-700 border border-green-200',
+  reach: 'bg-[#ff3b30]/10 text-[#ff3b30]',
+  target: 'bg-[#ff9f0a]/10 text-[#ff9f0a]',
+  likely: 'bg-[#34c759]/10 text-[#34c759]',
+};
+
+const fitBarColor: Record<string, string> = {
+  reach: '#ff3b30',
+  target: '#ff9f0a',
+  likely: '#34c759',
 };
 
 const sectionConfig = [
-  { key: 'likely', label: 'Likely Schools', emoji: '✅', desc: 'Schools where you have a strong chance of admission' },
-  { key: 'target', label: 'Target Schools', emoji: '🎯', desc: 'Schools where you are a competitive applicant' },
-  { key: 'reach', label: 'Reach Schools', emoji: '🚀', desc: 'Ambitious schools that would be a stretch' },
+  { key: 'likely', label: 'Likely Schools', desc: 'Schools where you have a strong chance of admission' },
+  { key: 'target', label: 'Target Schools', desc: 'Schools where you are a competitive applicant' },
+  { key: 'reach', label: 'Reach Schools', desc: 'Ambitious schools that would be a stretch' },
 ];
+
+const uniDomains: Record<string, { domain: string; color: string }> = {
+  Stanford: { domain: 'stanford.edu', color: '#8C1515' },
+  Harvard: { domain: 'harvard.edu', color: '#A51C30' },
+  MIT: { domain: 'mit.edu', color: '#750014' },
+  Yale: { domain: 'yale.edu', color: '#00356B' },
+  Princeton: { domain: 'princeton.edu', color: '#FF6900' },
+  Columbia: { domain: 'columbia.edu', color: '#003DA5' },
+  UPenn: { domain: 'upenn.edu', color: '#011F5B' },
+  Duke: { domain: 'duke.edu', color: '#003087' },
+  Northwestern: { domain: 'northwestern.edu', color: '#4E2A84' },
+  Michigan: { domain: 'umich.edu', color: '#00274C' },
+};
+
+function getUniMeta(name: string): { domain: string; color: string } | null {
+  for (const [key, val] of Object.entries(uniDomains)) {
+    if (name.toLowerCase().includes(key.toLowerCase())) return val;
+  }
+  return null;
+}
+
+function CollegeLogo({ name }: { name: string }) {
+  const [imgError, setImgError] = useState(false);
+  const meta = getUniMeta(name);
+  const initials = name
+    .split(' ')
+    .filter((w) => w.length > 2)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('');
+  const bgColor = meta?.color ?? '#1d1d1f';
+
+  if (meta && !imgError) {
+    return (
+      <div
+        className="w-12 h-12 rounded-[13px] flex items-center justify-center overflow-hidden shrink-0"
+        style={{ backgroundColor: bgColor }}
+      >
+        <img
+          src={`https://logo.clearbit.com/${meta.domain}`}
+          alt={name}
+          className="w-8 h-8 object-contain"
+          onError={() => setImgError(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="w-12 h-12 rounded-[13px] flex items-center justify-center shrink-0"
+      style={{ backgroundColor: bgColor }}
+    >
+      <span className="text-white text-[13px] font-[700]">{initials || name[0]}</span>
+    </div>
+  );
+}
 
 function CollegeCard({ college, onAdd }: { college: CollegeRec; onAdd: (id: string) => void }) {
   const [adding, setAdding] = useState(false);
@@ -40,34 +103,54 @@ function CollegeCard({ college, onAdd }: { college: CollegeRec; onAdd: (id: stri
     onAdd(college.id);
   }
 
+  const barColor = fitBarColor[college.match_type] ?? '#ff3b30';
+
   return (
-    <div className="bg-white rounded-xl shadow p-5 flex flex-col gap-3">
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="font-bold text-navy text-lg leading-tight">{college.name}</h3>
-          <p className="text-sm text-gray-500 mt-0.5">{college.location}</p>
-        </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${badgeStyles[college.match_type]}`}>
-          {college.match_type}
-        </span>
-      </div>
-      <div className="flex gap-4 text-sm">
-        <div>
-          <span className="text-gray-500">Fit Score </span>
-          <span className="font-bold text-coral">{college.overall_fit_score}%</span>
-        </div>
-        <div>
-          <span className="text-gray-500">Chance </span>
-          <span className="font-bold text-navy">{college.chancing_percentage}%</span>
+    <div className="bg-[#f5f5f7] rounded-2xl p-5 flex flex-col gap-4 hover:shadow-sm transition-shadow">
+      <div className="flex items-start gap-3">
+        <CollegeLogo name={college.name} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-[600] text-[#1d1d1f] text-[15px] leading-tight truncate">
+              {college.name}
+            </h3>
+            <span
+              className={`rounded-full px-2.5 py-1 text-xs font-[600] shrink-0 ${badgeStyles[college.match_type]}`}
+            >
+              {college.match_type.charAt(0).toUpperCase() + college.match_type.slice(1)}
+            </span>
+          </div>
+          <p className="text-[13px] text-[#86868b] mt-0.5">{college.location}</p>
         </div>
       </div>
-      <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-        <div className="h-full bg-coral rounded-full" style={{ width: `${college.overall_fit_score}%` }} />
+
+      <div className="flex gap-6 text-[13px]">
+        <div>
+          <span className="text-[#86868b]">Fit Score </span>
+          <span className="font-[700] text-[#ff3b30]">{college.overall_fit_score}%</span>
+        </div>
+        <div>
+          <span className="text-[#86868b]">Chance </span>
+          <span className="font-[600] text-[#1d1d1f]">{college.chancing_percentage}%</span>
+        </div>
       </div>
+
+      {/* Fit bar */}
+      <div className="h-[4px] bg-[#e8e8ed] rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${college.overall_fit_score}%`, backgroundColor: barColor }}
+        />
+      </div>
+
       <button
         onClick={handleAdd}
         disabled={adding || added}
-        className="bg-coral text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 disabled:opacity-60 mt-1"
+        className={
+          added
+            ? 'text-[13px] font-[600] py-2 rounded-xl border border-[#34c759]/30 bg-[#34c759]/10 text-[#34c759]'
+            : 'text-[13px] font-[600] py-2 rounded-xl bg-[#ff3b30] hover:bg-[#e6352b] text-white transition-colors disabled:opacity-60'
+        }
       >
         {added ? 'Added to My List' : adding ? 'Adding...' : 'Add to My List'}
       </button>
@@ -109,69 +192,81 @@ export default function RecommendationsPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <DashboardSidebar />
-      <main className="ml-64 flex-1 p-8">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-navy">AI Recommendations</h1>
-            <p className="text-gray-500 text-sm mt-1">Personalized college matches based on your profile</p>
+    <>
+      <TopNav />
+      <main className="min-h-screen bg-white pt-[90px] pb-28">
+        <div className="max-w-5xl mx-auto px-6">
+          {/* Hero */}
+          <div className="mb-10 flex items-start justify-between">
+            <div>
+              <h1 className="text-[34px] font-[700] tracking-[-0.5px] text-[#1d1d1f] leading-tight">
+                AI <span className="text-[#ff3b30]">Recommendations</span>
+              </h1>
+              <p className="text-[15px] text-[#86868b] mt-1">
+                Personalized college matches based on your profile
+              </p>
+            </div>
+            {aiEnriched && (
+              <span className="bg-[#1d1d1f] text-white text-[12px] px-3 py-1.5 rounded-full font-[600] shrink-0 mt-2">
+                AI Powered
+              </span>
+            )}
           </div>
-          {aiEnriched && (
-            <span className="bg-navy text-white text-xs px-3 py-1 rounded-full font-medium">
-              AI Powered
-            </span>
+
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-24 gap-4">
+              <div className="w-12 h-12 border-2 border-[#ff3b30] border-t-transparent rounded-full animate-spin" />
+              <p className="text-[14px] text-[#86868b]">AI is analyzing your profile...</p>
+            </div>
+          )}
+
+          {!loading && error && (
+            <div className="bg-[#f5f5f7] rounded-2xl p-8 text-center max-w-md mx-auto mt-12">
+              <div className="w-12 h-12 bg-[#e8e8ed] rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-[20px]">📋</span>
+              </div>
+              <h2 className="font-[700] text-[#1d1d1f] text-[17px] mb-2">
+                Complete Your Profile First
+              </h2>
+              <p className="text-[13px] text-[#86868b] mb-6">{error}</p>
+              <a
+                href="/discover/profile"
+                className="inline-block bg-[#ff3b30] hover:bg-[#e6352b] text-white px-6 py-2.5 rounded-xl font-[600] text-[14px] transition-colors"
+              >
+                Go to Profile
+              </a>
+            </div>
+          )}
+
+          {!loading && !error && recs.length === 0 && (
+            <div className="text-center py-16 text-[14px] text-[#86868b]">
+              No recommendations found. Try updating your profile.
+            </div>
+          )}
+
+          {!loading && !error && recs.length > 0 && (
+            <div className="space-y-12">
+              {sectionConfig.map(({ key, label, desc }) => {
+                const list = grouped[key as keyof typeof grouped];
+                if (list.length === 0) return null;
+                return (
+                  <section key={key}>
+                    <div className="mb-1">
+                      <h2 className="text-[22px] font-[700] text-[#1d1d1f]">{label}</h2>
+                    </div>
+                    <p className="text-[14px] text-[#86868b] mb-5">{desc}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {list.map((college) => (
+                        <CollegeCard key={college.id} college={college} onAdd={handleAdd} />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
           )}
         </div>
-
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <div className="animate-spin rounded-full h-14 w-14 border-b-2 border-navy" />
-            <p className="text-gray-500 text-sm">AI is analyzing your profile...</p>
-          </div>
-        )}
-
-        {!loading && error && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center max-w-md mx-auto mt-16">
-            <div className="text-4xl mb-3">📋</div>
-            <h2 className="font-bold text-navy text-lg mb-2">Complete Your Profile First</h2>
-            <p className="text-yellow-700 text-sm mb-4">{error}</p>
-            <a
-              href="/discover/profile"
-              className="bg-coral text-white px-6 py-2 rounded-lg font-semibold text-sm inline-block"
-            >
-              Go to Profile
-            </a>
-          </div>
-        )}
-
-        {!loading && !error && recs.length === 0 && (
-          <div className="text-center py-16 text-gray-500">No recommendations found. Try updating your profile.</div>
-        )}
-
-        {!loading && !error && recs.length > 0 && (
-          <div className="space-y-10">
-            {sectionConfig.map(({ key, label, emoji, desc }) => {
-              const list = grouped[key as keyof typeof grouped];
-              if (list.length === 0) return null;
-              return (
-                <section key={key}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">{emoji}</span>
-                    <h2 className="text-xl font-bold text-navy">{label}</h2>
-                  </div>
-                  <p className="text-sm text-gray-500 mb-4">{desc}</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {list.map((college) => (
-                      <CollegeCard key={college.id} college={college} onAdd={handleAdd} />
-                    ))}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-        )}
       </main>
-    </div>
+    </>
   );
 }

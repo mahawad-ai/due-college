@@ -3,7 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import DashboardSidebar from '@/components/DashboardSidebar';
+import TopNav from '@/components/TopNav';
+
+const inputClass =
+  'w-full border border-[#d2d2d7] rounded-xl px-4 py-2.5 text-[14px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:border-[#ff3b30] transition-colors bg-white';
+
+const labelClass = 'block text-[13px] font-[500] text-[#1d1d1f] mb-1.5';
 
 export default function StudentProfilePage() {
   const { user, isLoaded } = useUser();
@@ -88,204 +93,193 @@ export default function StudentProfilePage() {
   if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-navy border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#ff3b30] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <>
-      <DashboardSidebar />
-      <main className="min-h-screen bg-gray-50 ml-64 py-12">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="bg-white rounded-2xl border border-gray-200 p-8">
-            <h1 className="text-3xl font-bold text-navy mb-2">Build Your Profile</h1>
-            <p className="text-gray-600 mb-8">
-              Tell us about yourself so we can find colleges that fit YOU.
+      <TopNav />
+      <main className="min-h-screen bg-white pt-[90px] pb-28">
+        <div className="max-w-2xl mx-auto px-6">
+          {/* Hero */}
+          <div className="mb-8">
+            <h1 className="text-[34px] font-[700] tracking-[-0.5px] text-[#1d1d1f] leading-tight">
+              Build Your <span className="text-[#ff3b30]">Profile</span>
+            </h1>
+            <p className="text-[15px] text-[#86868b] mt-1">
+              Tell us about yourself so we can find colleges that fit you.
             </p>
+          </div>
 
-            {error && (
-              <div className="bg-red-50 text-red-700 rounded-lg p-4 mb-6">{error}</div>
-            )}
+          {error && (
+            <div className="bg-[rgba(255,59,48,0.06)] border border-[#ff3b30]/20 text-[#ff3b30] rounded-2xl p-4 mb-6 text-[13px] font-[500]">
+              {error}
+            </div>
+          )}
 
-            {success && (
-              <div className="bg-green-50 text-green-700 rounded-lg p-4 mb-6">
-                Profile saved! Redirecting to college search...
-              </div>
-            )}
+          {success && (
+            <div className="bg-[rgba(52,199,89,0.08)] border border-[#34c759]/30 text-[#34c759] rounded-2xl p-4 mb-6 text-[13px] font-[500]">
+              Profile saved! Redirecting to college search...
+            </div>
+          )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Test Scores */}
-              <div className="border-t pt-6">
-                <h2 className="text-lg font-semibold text-navy mb-4">📝 Test Scores</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      SAT Score (out of 1600)
-                    </label>
-                    <input
-                      type="number"
-                      min="400"
-                      max="1600"
-                      value={formData.sat_score}
-                      onChange={(e) => setFormData({ ...formData, sat_score: e.target.value })}
-                      placeholder="1480"
-                      className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-navy/20"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      ACT Score (out of 36)
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="36"
-                      value={formData.act_score}
-                      onChange={(e) => setFormData({ ...formData, act_score: e.target.value })}
-                      placeholder="34"
-                      className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-navy/20"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* GPA */}
-              <div className="border-t pt-6">
-                <h2 className="text-lg font-semibold text-navy mb-4">📊 GPA</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Unweighted GPA
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="4"
-                      step="0.01"
-                      value={formData.gpa_unweighted}
-                      onChange={(e) =>
-                        setFormData({ ...formData, gpa_unweighted: e.target.value })
-                      }
-                      placeholder="3.95"
-                      className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-navy/20"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Weighted GPA (if applicable)
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="5"
-                      step="0.01"
-                      value={formData.gpa_weighted}
-                      onChange={(e) => setFormData({ ...formData, gpa_weighted: e.target.value })}
-                      placeholder="4.2"
-                      className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-navy/20"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Academics */}
-              <div className="border-t pt-6">
-                <h2 className="text-lg font-semibold text-navy mb-4">🎓 Academics</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Test Scores */}
+            <div className="bg-[#f5f5f7] rounded-2xl p-6">
+              <h2 className="text-[13px] font-[600] text-[#86868b] uppercase tracking-wide mb-4">
+                Test Scores
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Intended Major(s) — separate with commas
-                  </label>
+                  <label className={labelClass}>SAT Score (out of 1600)</label>
                   <input
-                    type="text"
-                    value={formData.intended_majors}
-                    onChange={(e) =>
-                      setFormData({ ...formData, intended_majors: e.target.value })
-                    }
-                    placeholder="Computer Science, Applied Mathematics"
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-navy/20"
+                    type="number"
+                    min="400"
+                    max="1600"
+                    value={formData.sat_score}
+                    onChange={(e) => setFormData({ ...formData, sat_score: e.target.value })}
+                    placeholder="1480"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>ACT Score (out of 36)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="36"
+                    value={formData.act_score}
+                    onChange={(e) => setFormData({ ...formData, act_score: e.target.value })}
+                    placeholder="34"
+                    className={inputClass}
                   />
                 </div>
               </div>
+            </div>
 
-              {/* Preferences */}
-              <div className="border-t pt-6">
-                <h2 className="text-lg font-semibold text-navy mb-4">🎯 Preferences</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      School Size
-                    </label>
-                    <select
-                      value={formData.size_preference}
-                      onChange={(e) =>
-                        setFormData({ ...formData, size_preference: e.target.value })
-                      }
-                      className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-navy/20"
-                    >
-                      <option value="any">Any size</option>
-                      <option value="small">Small (&lt;5,000)</option>
-                      <option value="medium">Medium (5,000-15,000)</option>
-                      <option value="large">Large (&gt;15,000)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Location Preference
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.location_preference}
-                      onChange={(e) =>
-                        setFormData({ ...formData, location_preference: e.target.value })
-                      }
-                      placeholder="CA, NY, or 'any'"
-                      className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-navy/20"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Budget */}
-              <div className="border-t pt-6">
-                <h2 className="text-lg font-semibold text-navy mb-4">💰 Budget</h2>
+            {/* GPA */}
+            <div className="bg-[#f5f5f7] rounded-2xl p-6">
+              <h2 className="text-[13px] font-[600] text-[#86868b] uppercase tracking-wide mb-4">
+                GPA
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Max Annual Cost (tuition + room/board)
-                  </label>
+                  <label className={labelClass}>Unweighted GPA</label>
                   <input
                     type="number"
                     min="0"
-                    value={formData.budget_constraint}
-                    onChange={(e) =>
-                      setFormData({ ...formData, budget_constraint: e.target.value })
-                    }
-                    placeholder="70000"
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-navy/20"
+                    max="4"
+                    step="0.01"
+                    value={formData.gpa_unweighted}
+                    onChange={(e) => setFormData({ ...formData, gpa_unweighted: e.target.value })}
+                    placeholder="3.95"
+                    className={inputClass}
                   />
-                  <p className="text-xs text-gray-500 mt-2">Leave blank for no preference</p>
+                </div>
+                <div>
+                  <label className={labelClass}>Weighted GPA (if applicable)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="5"
+                    step="0.01"
+                    value={formData.gpa_weighted}
+                    onChange={(e) => setFormData({ ...formData, gpa_weighted: e.target.value })}
+                    placeholder="4.2"
+                    className={inputClass}
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Submit */}
-              <div className="border-t pt-6 flex gap-4">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 bg-coral hover:bg-coral/90 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  {saving ? 'Saving...' : 'Save Profile & Find Colleges'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => router.back()}
-                  className="flex-1 border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
+            {/* Academics */}
+            <div className="bg-[#f5f5f7] rounded-2xl p-6">
+              <h2 className="text-[13px] font-[600] text-[#86868b] uppercase tracking-wide mb-4">
+                Academics
+              </h2>
+              <div>
+                <label className={labelClass}>Intended Major(s) — separate with commas</label>
+                <input
+                  type="text"
+                  value={formData.intended_majors}
+                  onChange={(e) => setFormData({ ...formData, intended_majors: e.target.value })}
+                  placeholder="Computer Science, Applied Mathematics"
+                  className={inputClass}
+                />
               </div>
-            </form>
-          </div>
+            </div>
+
+            {/* Preferences */}
+            <div className="bg-[#f5f5f7] rounded-2xl p-6">
+              <h2 className="text-[13px] font-[600] text-[#86868b] uppercase tracking-wide mb-4">
+                Preferences
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>School Size</label>
+                  <select
+                    value={formData.size_preference}
+                    onChange={(e) => setFormData({ ...formData, size_preference: e.target.value })}
+                    className={inputClass}
+                  >
+                    <option value="any">Any size</option>
+                    <option value="small">Small (&lt;5,000)</option>
+                    <option value="medium">Medium (5,000–15,000)</option>
+                    <option value="large">Large (&gt;15,000)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Location Preference</label>
+                  <input
+                    type="text"
+                    value={formData.location_preference}
+                    onChange={(e) => setFormData({ ...formData, location_preference: e.target.value })}
+                    placeholder="CA, NY, or 'any'"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Budget */}
+            <div className="bg-[#f5f5f7] rounded-2xl p-6">
+              <h2 className="text-[13px] font-[600] text-[#86868b] uppercase tracking-wide mb-4">
+                Budget
+              </h2>
+              <div>
+                <label className={labelClass}>Max Annual Cost (tuition + room/board)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.budget_constraint}
+                  onChange={(e) => setFormData({ ...formData, budget_constraint: e.target.value })}
+                  placeholder="70000"
+                  className={inputClass}
+                />
+                <p className="text-[12px] text-[#86868b] mt-1.5">Leave blank for no preference</p>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex-1 bg-[#ff3b30] hover:bg-[#e6352b] text-white font-[600] text-[15px] py-3 rounded-xl transition-colors disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : 'Save Profile & Find Colleges'}
+              </button>
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="flex-1 border border-[#d2d2d7] hover:bg-[#f5f5f7] text-[#1d1d1f] font-[600] text-[15px] py-3 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
       </main>
     </>

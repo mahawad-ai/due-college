@@ -4,20 +4,21 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
-import DeadlineTable from '@/components/DeadlineTable';
+import TopNav from '@/components/TopNav';
 import MobileNav from '@/components/MobileNav';
+import DeadlineTable from '@/components/DeadlineTable';
 import { College, Deadline, CustomDeadline, ChecklistItem, AppStatus } from '@/lib/types';
 import { getDaysRemaining, generateCalendarEvent, cn } from '@/lib/utils';
 
 const APP_STATUS_CONFIG: Record<AppStatus, { label: string; color: string }> = {
-  not_started: { label: 'Not Started', color: 'bg-gray-100 text-gray-500' },
-  in_progress: { label: 'In Progress', color: 'bg-yellow-100 text-yellow-700' },
+  not_started: { label: 'Not Started', color: 'bg-[#f5f5f7] text-[#86868b]' },
+  in_progress: { label: 'In Progress', color: 'bg-[#ff9f0a]/10 text-[#ff9f0a]' },
   submitted: { label: 'Submitted', color: 'bg-blue-100 text-blue-700' },
-  accepted: { label: '🎉 Accepted!', color: 'bg-green-100 text-green-700' },
-  waitlisted: { label: 'Waitlisted', color: 'bg-orange-100 text-orange-700' },
-  rejected: { label: 'Denied', color: 'bg-red-100 text-red-600' },
+  accepted: { label: '🎉 Accepted!', color: 'bg-[#34c759]/10 text-[#34c759]' },
+  waitlisted: { label: 'Waitlisted', color: 'bg-[#ff9f0a]/10 text-[#ff9f0a]' },
+  rejected: { label: 'Denied', color: 'bg-[#ff3b30]/10 text-[#ff3b30]' },
   deferred: { label: 'Deferred', color: 'bg-purple-100 text-purple-700' },
-  enrolled: { label: '🎓 Enrolled', color: 'bg-green-200 text-green-800' },
+  enrolled: { label: '🎓 Enrolled', color: 'bg-[#34c759]/10 text-[#34c759]' },
 };
 
 export default function SchoolDetailPage() {
@@ -170,7 +171,7 @@ export default function SchoolDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-navy border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#1d1d1f] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -180,9 +181,9 @@ export default function SchoolDetailPage() {
       <main className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
           <div className="text-5xl mb-4">🏫</div>
-          <h2 className="text-xl font-bold text-navy mb-2">School not found</h2>
-          <p className="text-gray-500 mb-4">This college isn&apos;t in our database yet.</p>
-          <a href="mailto:hello@due.college?subject=Add college request" className="text-coral font-medium hover:underline">
+          <h2 className="text-xl font-[800] text-[#1d1d1f] mb-2">School not found</h2>
+          <p className="text-[#86868b] mb-4">This college isn&apos;t in our database yet.</p>
+          <a href="mailto:hello@due.college?subject=Add college request" className="text-[#ff3b30] font-medium hover:underline">
             Request this school →
           </a>
         </div>
@@ -192,12 +193,13 @@ export default function SchoolDetailPage() {
 
   return (
     <>
-      <main className="min-h-screen bg-gray-50 pb-24">
+      <TopNav />
+      <main className="min-h-screen bg-white pt-[90px] pb-28">
         <div className="max-w-container mx-auto px-4 py-6">
           {/* Back */}
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-1.5 text-gray-500 hover:text-navy text-sm font-medium mb-6 transition-colors"
+            className="inline-flex items-center gap-1.5 text-[#86868b] hover:text-[#1d1d1f] text-sm font-medium mb-6 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -206,11 +208,39 @@ export default function SchoolDetailPage() {
           </Link>
 
           {/* College Header */}
-          <div className="bg-white rounded-3xl border border-gray-200 p-6 mb-4">
+          <div className="bg-[#f5f5f7] rounded-2xl p-6 mb-4">
             <div className="flex items-start justify-between gap-3">
-              <div className="flex-1">
-                <h1 className="text-2xl font-extrabold text-navy mb-1">{college.name}</h1>
-                {college.city && <p className="text-gray-500">{college.city}, {college.state}</p>}
+              <div className="flex items-center gap-4 flex-1">
+                {/* University logo */}
+                {(() => {
+                  const domain = college.website
+                    ? college.website.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]
+                    : null;
+                  const initial = college.name.charAt(0).toUpperCase();
+                  return domain ? (
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-[#1d1d1f] flex items-center justify-center shrink-0 shadow-sm">
+                      <img
+                        src={`https://logo.clearbit.com/${domain}`}
+                        alt={college.name}
+                        className="w-full h-full object-contain p-1"
+                        onError={(e) => {
+                          const t = e.currentTarget;
+                          t.style.display = 'none';
+                          const fb = t.parentElement;
+                          if (fb) fb.innerHTML = `<span style="color:white;font-size:22px;font-weight:800;">${initial}</span>`;
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-14 h-14 rounded-xl bg-[#1d1d1f] flex items-center justify-center shrink-0 shadow-sm">
+                      <span className="text-white text-[22px] font-[800]">{initial}</span>
+                    </div>
+                  );
+                })()}
+                <div>
+                  <h1 className="text-2xl font-[800] text-[#1d1d1f] tracking-tight mb-1">{college.name}</h1>
+                  {college.city && <p className="text-[#86868b]">{college.city}, {college.state}</p>}
+                </div>
               </div>
               {isSignedIn && (
                 <span className={cn('text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0', APP_STATUS_CONFIG[appStatus].color)}>
@@ -220,12 +250,12 @@ export default function SchoolDetailPage() {
             </div>
             {isSignedIn && checklist.length > 0 && (
               <div className="mt-4">
-                <div className="flex justify-between text-xs text-gray-400 mb-1">
+                <div className="flex justify-between text-xs text-[#86868b] mb-1">
                   <span>Application progress</span>
                   <span>{completedChecklist}/{checklist.length} items · {progressPct}%</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-coral rounded-full transition-all" style={{ width: `${progressPct}%` }} />
+                <div className="h-2 bg-[#e8e8ed] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#ff3b30] rounded-full transition-all" style={{ width: `${progressPct}%` }} />
                 </div>
               </div>
             )}
@@ -237,11 +267,11 @@ export default function SchoolDetailPage() {
 
           {/* Application Status */}
           {isSignedIn && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Application Status</p>
+            <div className="bg-[#f5f5f7] rounded-2xl p-4 mb-4">
+              <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">Application Status</p>
               <div className="flex flex-wrap gap-2">
                 {(Object.entries(APP_STATUS_CONFIG) as [AppStatus, { label: string; color: string }][]).map(([status, cfg]) => (
-                  <button key={status} onClick={() => updateAppStatus(status)} className={cn('text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors', appStatus === status ? 'bg-navy text-white border-navy' : 'bg-white text-gray-500 border-gray-200 hover:border-navy')}>
+                  <button key={status} onClick={() => updateAppStatus(status)} className={cn('text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors', appStatus === status ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white text-[#86868b] border-[#e8e8ed] hover:border-[#1d1d1f]')}>
                     {cfg.label}
                   </button>
                 ))}
@@ -251,37 +281,37 @@ export default function SchoolDetailPage() {
 
           {/* College Notes */}
           {isSignedIn && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4">
+            <div className="bg-[#f5f5f7] rounded-2xl p-4 mb-4">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">My Notes</p>
-                {!editingNotes && <button onClick={() => setEditingNotes(true)} className="text-xs text-blue-600 font-medium hover:text-blue-800">{collegeNotes ? 'Edit' : '+ Add'}</button>}
+                <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b]">My Notes</p>
+                {!editingNotes && <button onClick={() => setEditingNotes(true)} className="text-xs text-[#ff3b30] font-medium hover:opacity-70">{collegeNotes ? 'Edit' : '+ Add'}</button>}
               </div>
               {editingNotes ? (
                 <div className="space-y-2">
-                  <textarea value={collegeNotes} onChange={e => setCollegeNotes(e.target.value)} placeholder="Why you love this school, financial aid notes, visit impressions..." rows={3} className="w-full text-sm px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy resize-none" />
+                  <textarea value={collegeNotes} onChange={e => setCollegeNotes(e.target.value)} placeholder="Why you love this school, financial aid notes, visit impressions..." rows={3} className="w-full text-sm px-3 py-2 border border-[#e8e8ed] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1d1d1f]/20 focus:border-[#1d1d1f] resize-none bg-white" />
                   <div className="flex gap-2">
-                    <button onClick={saveCollegeNotes} className="text-xs bg-navy text-white font-semibold px-4 py-1.5 rounded-lg">Save</button>
-                    <button onClick={() => setEditingNotes(false)} className="text-xs text-gray-400 px-3 py-1.5">Cancel</button>
+                    <button onClick={saveCollegeNotes} className="text-xs bg-[#ff3b30] text-white font-[600] px-4 py-1.5 rounded-xl hover:opacity-85">Save</button>
+                    <button onClick={() => setEditingNotes(false)} className="text-xs text-[#86868b] px-3 py-1.5">Cancel</button>
                   </div>
                 </div>
               ) : collegeNotes ? (
-                <p className="text-sm text-gray-600">{collegeNotes}</p>
+                <p className="text-sm text-[#1d1d1f]">{collegeNotes}</p>
               ) : (
-                <p className="text-sm text-gray-400 italic">No notes yet.</p>
+                <p className="text-sm text-[#86868b] italic">No notes yet.</p>
               )}
             </div>
           )}
 
           {/* Document Checklist */}
           {isSignedIn && checklist.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Document Checklist</p>
+            <div className="bg-[#f5f5f7] rounded-2xl p-4 mb-4">
+              <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">Document Checklist</p>
               <div className="space-y-2">
                 {checklist.map(item => (
                   <label key={item.id} className="flex items-center gap-3 cursor-pointer group">
-                    <input type="checkbox" checked={item.completed} onChange={e => toggleChecklistItem(item.id, e.target.checked)} className="w-4 h-4 rounded border-gray-300 text-navy focus:ring-navy/20 cursor-pointer" />
-                    <span className={cn('text-sm flex-1', item.completed ? 'line-through text-gray-300' : 'text-gray-700 group-hover:text-navy')}>{item.item}</span>
-                    {item.completed && <span className="text-xs text-green-500 font-medium">✓</span>}
+                    <input type="checkbox" checked={item.completed} onChange={e => toggleChecklistItem(item.id, e.target.checked)} className="w-4 h-4 rounded border-[#e8e8ed] text-[#1d1d1f] focus:ring-[#1d1d1f]/20 cursor-pointer" />
+                    <span className={cn('text-sm flex-1', item.completed ? 'line-through text-[#86868b]' : 'text-[#1d1d1f] group-hover:text-[#1d1d1f]')}>{item.item}</span>
+                    {item.completed && <span className="text-xs text-[#34c759] font-medium">✓</span>}
                   </label>
                 ))}
               </div>
@@ -291,10 +321,10 @@ export default function SchoolDetailPage() {
           {/* Deadline Table */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold text-navy">
+              <h2 className="text-lg font-[800] text-[#1d1d1f] tracking-tight">
                 Application Deadlines
                 {(deadlines.length + customDeadlines.length) > 0 && (
-                  <span className="ml-2 text-sm font-normal text-gray-400">
+                  <span className="ml-2 text-sm font-normal text-[#86868b]">
                     ({deadlines.length + customDeadlines.length} total)
                   </span>
                 )}
@@ -317,7 +347,7 @@ export default function SchoolDetailPage() {
                 showAddButton={!!isSignedIn}
               />
             ) : (
-              <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center text-gray-500">
+              <div className="bg-[#f5f5f7] rounded-2xl p-6 text-center text-[#86868b]">
                 No deadlines on record for this school.
                 {isSignedIn && (
                   <DeadlineTable
@@ -336,11 +366,11 @@ export default function SchoolDetailPage() {
 
           {/* Calendar export upgrade prompt */}
           {!canExportCalendar && isSignedIn && deadlines.length > 0 && (
-            <div className="bg-yellow-50 border border-yellow rounded-2xl p-4 mb-6">
-              <p className="text-sm font-medium text-navy">
+            <div className="bg-[#ff9f0a]/10 border border-[#ff9f0a]/20 rounded-2xl p-4 mb-6">
+              <p className="text-sm font-medium text-[#1d1d1f]">
                 📅 Upgrade to Plus to export deadlines to Google Calendar
               </p>
-              <Link href="/upgrade" className="text-sm text-coral font-semibold hover:underline mt-1 block">
+              <Link href="/upgrade" className="text-sm text-[#ff3b30] font-semibold hover:underline mt-1 block">
                 Upgrade for $4.99/month →
               </Link>
             </div>
@@ -348,20 +378,20 @@ export default function SchoolDetailPage() {
 
           {/* Affiliate Section */}
           {soonestDeadline && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
-              <h3 className="font-bold text-navy mb-3 text-sm">Resources</h3>
+            <div className="bg-[#f5f5f7] rounded-2xl p-5">
+              <h3 className="font-[800] text-[#1d1d1f] mb-3 text-sm tracking-tight">Resources</h3>
               {soonestDeadline.days > 30 && (
                 <a
                   href="https://magoosh.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                  className="flex items-center justify-between p-3 bg-white rounded-xl hover:bg-[#e8e8ed] transition-colors"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-navy">Still need SAT prep?</p>
-                    <p className="text-xs text-gray-500">Affordable online prep that works</p>
+                    <p className="text-sm font-semibold text-[#1d1d1f]">Still need SAT prep?</p>
+                    <p className="text-xs text-[#86868b]">Affordable online prep that works</p>
                   </div>
-                  <span className="text-sm font-bold text-coral">Magoosh →</span>
+                  <span className="text-sm font-bold text-[#ff3b30]">Magoosh →</span>
                 </a>
               )}
               {soonestDeadline.days <= 30 && soonestDeadline.days > 7 && (
@@ -369,15 +399,15 @@ export default function SchoolDetailPage() {
                   href="https://prompt.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                  className="flex items-center justify-between p-3 bg-white rounded-xl hover:bg-[#e8e8ed] transition-colors"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-navy">
+                    <p className="text-sm font-semibold text-[#1d1d1f]">
                       {college.name} {soonestDeadline.type} is in {soonestDeadline.days} days. Need essay help?
                     </p>
-                    <p className="text-xs text-gray-500">Expert essay coaches and feedback</p>
+                    <p className="text-xs text-[#86868b]">Expert essay coaches and feedback</p>
                   </div>
-                  <span className="text-sm font-bold text-coral">Prompt →</span>
+                  <span className="text-sm font-bold text-[#ff3b30]">Prompt →</span>
                 </a>
               )}
               {soonestDeadline.days <= 7 && soonestDeadline.days >= 0 && (
@@ -385,15 +415,15 @@ export default function SchoolDetailPage() {
                   href="https://collegevine.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-red-50 rounded-xl hover:bg-red-100 transition-colors"
+                  className="flex items-center justify-between p-3 bg-[#ff3b30]/5 rounded-xl hover:bg-[#ff3b30]/10 transition-colors"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-navy">
+                    <p className="text-sm font-semibold text-[#1d1d1f]">
                       Last-minute essay review — {soonestDeadline.days} day{soonestDeadline.days !== 1 ? 's' : ''} left
                     </p>
-                    <p className="text-xs text-gray-500">Free peer reviews + expert feedback</p>
+                    <p className="text-xs text-[#86868b]">Free peer reviews + expert feedback</p>
                   </div>
-                  <span className="text-sm font-bold text-coral">CollegeVine →</span>
+                  <span className="text-sm font-bold text-[#ff3b30]">CollegeVine →</span>
                 </a>
               )}
             </div>

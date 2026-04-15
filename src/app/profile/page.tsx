@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useUser, UserButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import TopNav from '@/components/TopNav';
 import MobileNav from '@/components/MobileNav';
 import { cn } from '@/lib/utils';
 
@@ -89,87 +90,88 @@ export default function ProfilePage() {
     setTimeout(() => setSaved(false), 2000);
   }
 
-  if (!isLoaded || loading) return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-navy border-t-transparent rounded-full animate-spin" /></div>;
+  if (!isLoaded || loading) return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#1d1d1f] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <>
-      <main className="min-h-screen bg-gray-50 pb-28">
+      <TopNav />
+      <main className="min-h-screen bg-white pt-[90px] pb-28">
         <div className="max-w-container mx-auto px-4 py-6">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <Link href="/more" className="text-sm text-gray-500 hover:text-navy font-medium mb-1 block">← More</Link>
-              <h1 className="text-2xl font-extrabold text-navy">Academic Profile</h1>
-              <p className="text-sm text-gray-500 mt-1">Used for Reach / Match / Safety and AI suggestions</p>
+              <Link href="/more" className="text-sm text-[#86868b] hover:text-[#1d1d1f] font-medium mb-1 block">← More</Link>
+              <h1 className="text-[40px] font-[800] tracking-[-2px] text-[#1d1d1f] leading-none">Academic Profile</h1>
+              <p className="text-sm text-[#86868b] mt-2">Used for Reach / Match / Safety and AI suggestions</p>
             </div>
             <UserButton appearance={{ elements: { avatarBox: 'w-10 h-10' } }} afterSignOutUrl="/" />
           </div>
 
           <div className="space-y-5">
             {/* Academics */}
-            <section className="bg-white rounded-2xl border border-gray-200 p-5">
-              <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">Academics</h2>
+            <section className="bg-[#f5f5f7] rounded-2xl p-5">
+              <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-4">Academics</h2>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-1.5">Unweighted GPA</label>
-                  <input type="number" step="0.01" min="0" max="5" value={form.gpa} onChange={e => setForm(f => ({ ...f, gpa: e.target.value }))} placeholder="3.85" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-navy" />
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-1.5">Unweighted GPA</label>
+                  <input type="number" step="0.01" min="0" max="5" value={form.gpa} onChange={e => setForm(f => ({ ...f, gpa: e.target.value }))} placeholder="3.85" className="w-full px-3 py-2.5 border border-[#e8e8ed] rounded-xl text-sm focus:outline-none focus:border-[#1d1d1f] bg-white" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-1.5">GPA Scale</label>
-                  <select value={form.gpa_scale} onChange={e => setForm(f => ({ ...f, gpa_scale: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:border-navy">
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-1.5">GPA Scale</label>
+                  <select value={form.gpa_scale} onChange={e => setForm(f => ({ ...f, gpa_scale: e.target.value }))} className="w-full px-3 py-2.5 border border-[#e8e8ed] rounded-xl text-sm bg-white focus:outline-none focus:border-[#1d1d1f]">
                     <option value="4.0">4.0</option>
                     <option value="5.0">5.0 (weighted)</option>
                     <option value="100">100-point scale</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-1.5">Weighted GPA</label>
-                  <input type="number" step="0.01" min="0" max="5" value={form.weighted_gpa} onChange={e => setForm(f => ({ ...f, weighted_gpa: e.target.value }))} placeholder="4.2" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-navy" />
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-1.5">Weighted GPA</label>
+                  <input type="number" step="0.01" min="0" max="5" value={form.weighted_gpa} onChange={e => setForm(f => ({ ...f, weighted_gpa: e.target.value }))} placeholder="4.2" className="w-full px-3 py-2.5 border border-[#e8e8ed] rounded-xl text-sm focus:outline-none focus:border-[#1d1d1f] bg-white" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-1.5">Graduation Year</label>
-                  <input type="number" value={form.graduation_year} onChange={e => setForm(f => ({ ...f, graduation_year: e.target.value }))} placeholder="2027" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-navy" />
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-1.5">Graduation Year</label>
+                  <input type="number" value={form.graduation_year} onChange={e => setForm(f => ({ ...f, graduation_year: e.target.value }))} placeholder="2027" className="w-full px-3 py-2.5 border border-[#e8e8ed] rounded-xl text-sm focus:outline-none focus:border-[#1d1d1f] bg-white" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-1.5">Class Rank</label>
-                  <input type="number" value={form.class_rank} onChange={e => setForm(f => ({ ...f, class_rank: e.target.value }))} placeholder="15" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-navy" />
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-1.5">Class Rank</label>
+                  <input type="number" value={form.class_rank} onChange={e => setForm(f => ({ ...f, class_rank: e.target.value }))} placeholder="15" className="w-full px-3 py-2.5 border border-[#e8e8ed] rounded-xl text-sm focus:outline-none focus:border-[#1d1d1f] bg-white" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-1.5">Class Size</label>
-                  <input type="number" value={form.class_size} onChange={e => setForm(f => ({ ...f, class_size: e.target.value }))} placeholder="350" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-navy" />
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-1.5">Class Size</label>
+                  <input type="number" value={form.class_size} onChange={e => setForm(f => ({ ...f, class_size: e.target.value }))} placeholder="350" className="w-full px-3 py-2.5 border border-[#e8e8ed] rounded-xl text-sm focus:outline-none focus:border-[#1d1d1f] bg-white" />
                 </div>
               </div>
             </section>
 
             {/* Test scores */}
-            <section className="bg-white rounded-2xl border border-gray-200 p-5">
-              <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">Best Test Scores</h2>
+            <section className="bg-[#f5f5f7] rounded-2xl p-5">
+              <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-4">Best Test Scores</h2>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-1.5">Best SAT (out of 1600)</label>
-                  <input type="number" min="400" max="1600" value={form.best_sat} onChange={e => setForm(f => ({ ...f, best_sat: e.target.value }))} placeholder="1450" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-navy" />
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-1.5">Best SAT (out of 1600)</label>
+                  <input type="number" min="400" max="1600" value={form.best_sat} onChange={e => setForm(f => ({ ...f, best_sat: e.target.value }))} placeholder="1450" className="w-full px-3 py-2.5 border border-[#e8e8ed] rounded-xl text-sm focus:outline-none focus:border-[#1d1d1f] bg-white" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-1.5">Best ACT (out of 36)</label>
-                  <input type="number" min="1" max="36" value={form.best_act} onChange={e => setForm(f => ({ ...f, best_act: e.target.value }))} placeholder="32" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-navy" />
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-1.5">Best ACT (out of 36)</label>
+                  <input type="number" min="1" max="36" value={form.best_act} onChange={e => setForm(f => ({ ...f, best_act: e.target.value }))} placeholder="32" className="w-full px-3 py-2.5 border border-[#e8e8ed] rounded-xl text-sm focus:outline-none focus:border-[#1d1d1f] bg-white" />
                 </div>
               </div>
-              <p className="text-xs text-gray-400 mt-2">Used to show Reach / Match / Safety labels when you explore colleges</p>
+              <p className="text-xs text-[#86868b] mt-2">Used to show Reach / Match / Safety labels when you explore colleges</p>
             </section>
 
             {/* Intended major */}
-            <section className="bg-white rounded-2xl border border-gray-200 p-5">
-              <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">Intended Major</h2>
+            <section className="bg-[#f5f5f7] rounded-2xl p-5">
+              <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-4">Intended Major</h2>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-1.5">First choice</label>
-                  <select value={form.intended_major} onChange={e => setForm(f => ({ ...f, intended_major: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:border-navy">
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-1.5">First choice</label>
+                  <select value={form.intended_major} onChange={e => setForm(f => ({ ...f, intended_major: e.target.value }))} className="w-full px-3 py-2.5 border border-[#e8e8ed] rounded-xl text-sm bg-white focus:outline-none focus:border-[#1d1d1f]">
                     <option value="">Select...</option>
                     {MAJORS.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-1.5">Second choice</label>
-                  <select value={form.intended_major_2} onChange={e => setForm(f => ({ ...f, intended_major_2: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:border-navy">
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-1.5">Second choice</label>
+                  <select value={form.intended_major_2} onChange={e => setForm(f => ({ ...f, intended_major_2: e.target.value }))} className="w-full px-3 py-2.5 border border-[#e8e8ed] rounded-xl text-sm bg-white focus:outline-none focus:border-[#1d1d1f]">
                     <option value="">Select...</option>
                     {MAJORS.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
@@ -178,34 +180,34 @@ export default function ProfilePage() {
             </section>
 
             {/* Preferences */}
-            <section className="bg-white rounded-2xl border border-gray-200 p-5">
-              <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">School Preferences</h2>
+            <section className="bg-[#f5f5f7] rounded-2xl p-5">
+              <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-4">School Preferences</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-2">Preferred regions</label>
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-2">Preferred regions</label>
                   <div className="flex flex-wrap gap-2">
                     {REGIONS.map(r => (
-                      <button key={r} onClick={() => toggleArray('preferred_regions', r)} className={cn('text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors', form.preferred_regions.includes(r) ? 'bg-navy text-white border-navy' : 'bg-white text-gray-600 border-gray-200 hover:border-navy')}>
+                      <button key={r} onClick={() => toggleArray('preferred_regions', r)} className={cn('text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors', form.preferred_regions.includes(r) ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white text-[#86868b] border-[#e8e8ed] hover:border-[#1d1d1f]')}>
                         {r}
                       </button>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-2">Campus setting</label>
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-2">Campus setting</label>
                   <div className="flex flex-wrap gap-2">
                     {SETTINGS.map(s => (
-                      <button key={s} onClick={() => toggleArray('preferred_settings', s)} className={cn('text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors capitalize', form.preferred_settings.includes(s) ? 'bg-navy text-white border-navy' : 'bg-white text-gray-600 border-gray-200 hover:border-navy')}>
+                      <button key={s} onClick={() => toggleArray('preferred_settings', s)} className={cn('text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors capitalize', form.preferred_settings.includes(s) ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white text-[#86868b] border-[#e8e8ed] hover:border-[#1d1d1f]')}>
                         {s.replace('_', ' ')}
                       </button>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-navy block mb-2">School size</label>
+                  <label className="text-xs font-semibold text-[#1d1d1f] block mb-2">School size</label>
                   <div className="flex gap-2">
                     {[['small', 'Small (<5K)'], ['medium', 'Medium (5–15K)'], ['large', 'Large (15K+)'], ['any', 'Any']].map(([v, label]) => (
-                      <button key={v} onClick={() => setForm(f => ({ ...f, preferred_size: v }))} className={cn('flex-1 text-xs font-semibold py-2 rounded-xl border transition-colors', form.preferred_size === v ? 'bg-navy text-white border-navy' : 'bg-white text-gray-600 border-gray-200 hover:border-navy')}>
+                      <button key={v} onClick={() => setForm(f => ({ ...f, preferred_size: v }))} className={cn('flex-1 text-xs font-semibold py-2 rounded-xl border transition-colors', form.preferred_size === v ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-white text-[#86868b] border-[#e8e8ed] hover:border-[#1d1d1f]')}>
                         {label}
                       </button>
                     ))}
@@ -215,13 +217,13 @@ export default function ProfilePage() {
             </section>
           </div>
 
-          <button onClick={handleSave} disabled={saving} className="w-full mt-5 py-4 rounded-2xl bg-coral text-white font-bold text-base hover:bg-coral/90 disabled:opacity-50 transition-colors">
+          <button onClick={handleSave} disabled={saving} className="w-full mt-5 py-4 rounded-2xl bg-[#ff3b30] text-white font-[800] text-base hover:opacity-85 disabled:opacity-50 transition-opacity">
             {saving ? 'Saving...' : saved ? '✓ Saved!' : 'Save Profile'}
           </button>
 
           <div className="flex gap-3 mt-3">
-            <Link href="/explore" className="flex-1 text-center py-3 rounded-xl bg-navy text-white font-semibold text-sm hover:bg-navy/90">Explore Colleges →</Link>
-            <Link href="/suggest" className="flex-1 text-center py-3 rounded-xl border-2 border-navy text-navy font-semibold text-sm hover:bg-gray-50">AI Suggestions →</Link>
+            <Link href="/explore" className="flex-1 text-center py-3 rounded-xl bg-[#1d1d1f] text-white font-[600] text-sm hover:opacity-85">Explore Colleges →</Link>
+            <Link href="/suggest" className="flex-1 text-center py-3 rounded-xl border border-[#d2d2d7] text-[#1d1d1f] font-[600] text-sm hover:bg-[#f5f5f7]">AI Suggestions →</Link>
           </div>
         </div>
       </main>

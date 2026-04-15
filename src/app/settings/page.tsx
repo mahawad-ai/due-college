@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useUser, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
+import TopNav from '@/components/TopNav';
 import MobileNav from '@/components/MobileNav';
 import { NotificationPreferences, UserProfile } from '@/lib/types';
 
@@ -64,35 +65,36 @@ export default function SettingsPage() {
 
   return (
     <>
-      <main className="min-h-screen bg-gray-50 pb-24">
+      <TopNav />
+      <main className="min-h-screen bg-white pt-[90px] pb-28">
         <div className="max-w-container mx-auto px-4 py-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <Link href="/dashboard" className="text-sm text-gray-500 hover:text-navy mb-1 block">
+              <Link href="/dashboard" className="text-sm text-[#86868b] hover:text-[#1d1d1f] mb-1 block">
                 ← Dashboard
               </Link>
-              <h1 className="text-2xl font-extrabold text-navy">Settings</h1>
+              <h1 className="text-[40px] font-[800] tracking-[-2px] text-[#1d1d1f] leading-none">Settings</h1>
             </div>
             <UserButton appearance={{ elements: { avatarBox: 'w-10 h-10' } }} afterSignOutUrl="/" />
           </div>
 
           {/* Profile */}
-          <div className="bg-white rounded-3xl border border-gray-200 p-6 mb-4">
-            <h2 className="font-bold text-navy mb-4">Profile</h2>
+          <div className="bg-[#f5f5f7] rounded-2xl p-6 mb-4">
+            <h2 className="font-[800] text-[#1d1d1f] mb-4">Profile</h2>
             <div className="space-y-3 mb-4">
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Name</label>
-                <p className="text-navy font-medium mt-0.5">{user?.fullName || '—'}</p>
+                <label className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b]">Name</label>
+                <p className="text-[#1d1d1f] font-medium mt-0.5">{user?.fullName || '—'}</p>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</label>
-                <p className="text-navy font-medium mt-0.5">{user?.primaryEmailAddress?.emailAddress || '—'}</p>
+                <label className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b]">Email</label>
+                <p className="text-[#1d1d1f] font-medium mt-0.5">{user?.primaryEmailAddress?.emailAddress || '—'}</p>
               </div>
             </div>
 
             <form onSubmit={saveProfile}>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+              <label className="block text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-1.5">
                 Phone Number
               </label>
               <div className="flex gap-3">
@@ -101,40 +103,40 @@ export default function SettingsPage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+1 (555) 555-5555"
-                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-navy text-sm"
+                  className="flex-1 px-4 py-3 border-2 border-[#e8e8ed] rounded-xl focus:outline-none focus:border-[#1d1d1f] text-sm bg-white"
                 />
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-3 bg-navy text-white text-sm font-semibold rounded-xl hover:bg-navy/90 transition-colors"
+                  className="px-5 py-3 bg-[#ff3b30] text-white text-sm font-[600] rounded-xl hover:opacity-85 transition-opacity"
                 >
                   {saving ? '...' : 'Save'}
                 </button>
               </div>
-              {saved && <p className="text-green-600 text-xs mt-1.5">✓ Saved</p>}
+              {saved && <p className="text-[#34c759] text-xs mt-1.5">✓ Saved</p>}
             </form>
           </div>
 
           {/* Notifications */}
           {prefs && (
-            <div className="bg-white rounded-3xl border border-gray-200 p-6 mb-4">
-              <h2 className="font-bold text-navy mb-4">Notifications</h2>
+            <div className="bg-[#f5f5f7] rounded-2xl p-6 mb-4">
+              <h2 className="font-[800] text-[#1d1d1f] mb-4">Notifications</h2>
 
               <div className="space-y-4">
                 {/* Email */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-navy text-sm">Email reminders</p>
-                    <p className="text-xs text-gray-400">Always enabled</p>
+                    <p className="font-medium text-[#1d1d1f] text-sm">Email reminders</p>
+                    <p className="text-xs text-[#86868b]">Always enabled</p>
                   </div>
-                  <div className="w-11 h-6 bg-green rounded-full opacity-50 cursor-not-allowed" />
+                  <div className="w-11 h-6 bg-[#34c759] rounded-full opacity-50 cursor-not-allowed" />
                 </div>
 
                 {/* SMS */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-navy text-sm">SMS reminders</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="font-medium text-[#1d1d1f] text-sm">SMS reminders</p>
+                    <p className="text-xs text-[#86868b]">
                       {profile?.subscription_tier === 'free'
                         ? 'Requires Plus or Family plan'
                         : 'Requires phone number'}
@@ -144,14 +146,14 @@ export default function SettingsPage() {
                     onClick={() => updatePref('sms_enabled', !prefs.sms_enabled)}
                     disabled={profile?.subscription_tier === 'free'}
                     className={`w-11 h-6 rounded-full transition-colors ${
-                      prefs.sms_enabled ? 'bg-green' : 'bg-gray-300'
+                      prefs.sms_enabled ? 'bg-[#34c759]' : 'bg-[#e8e8ed]'
                     } ${profile?.subscription_tier === 'free' ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                 </div>
 
-                <hr className="border-gray-100" />
+                <hr className="border-[#e8e8ed]" />
 
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Remind me...</p>
+                <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b]">Remind me...</p>
 
                 {(
                   [
@@ -163,11 +165,11 @@ export default function SettingsPage() {
                   ] as const
                 ).map(({ key, label }) => (
                   <div key={key} className="flex items-center justify-between">
-                    <label className="text-sm text-navy">{label}</label>
+                    <label className="text-sm text-[#1d1d1f]">{label}</label>
                     <button
                       onClick={() => updatePref(key, !prefs[key])}
                       className={`w-11 h-6 rounded-full transition-colors ${
-                        prefs[key] ? 'bg-navy' : 'bg-gray-200'
+                        prefs[key] ? 'bg-[#1d1d1f]' : 'bg-[#e8e8ed]'
                       }`}
                     />
                   </div>
@@ -177,25 +179,25 @@ export default function SettingsPage() {
           )}
 
           {/* Subscription */}
-          <div className="bg-white rounded-3xl border border-gray-200 p-6 mb-4">
+          <div className="bg-[#f5f5f7] rounded-2xl p-6 mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-navy">Subscription</h2>
-              <span className="text-sm font-semibold text-coral bg-coral-light px-3 py-1 rounded-full">
+              <h2 className="font-[800] text-[#1d1d1f]">Subscription</h2>
+              <span className="text-sm font-semibold text-[#ff3b30] bg-[#ff3b30]/10 px-3 py-1 rounded-full">
                 {tierLabels[profile?.subscription_tier || 'free']}
               </span>
             </div>
             <Link
               href="/upgrade"
-              className="block w-full text-center py-3 border-2 border-coral text-coral font-semibold rounded-xl hover:bg-coral-light transition-colors text-sm"
+              className="block w-full text-center py-3 border border-[#d2d2d7] text-[#1d1d1f] font-[600] rounded-xl hover:bg-[#e8e8ed] transition-colors text-sm"
             >
               {profile?.subscription_tier === 'free' ? 'Upgrade plan' : 'Manage subscription'}
             </Link>
           </div>
 
           {/* Danger Zone */}
-          <div className="bg-white rounded-3xl border border-red-100 p-6">
-            <h2 className="font-bold text-navy mb-4">Account</h2>
-            <button className="text-sm text-red-500 hover:text-red-700 font-medium">
+          <div className="bg-[#f5f5f7] rounded-2xl border border-[#ff3b30]/20 p-6">
+            <h2 className="font-[800] text-[#1d1d1f] mb-4">Account</h2>
+            <button className="text-sm text-[#ff3b30] hover:opacity-70 font-medium">
               Delete account
             </button>
           </div>

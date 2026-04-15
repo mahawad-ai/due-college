@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useUser, UserButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import TopNav from '@/components/TopNav';
 import MobileNav from '@/components/MobileNav';
 import { Activity, ActivityType } from '@/lib/types';
 import { formatDate, cn } from '@/lib/utils';
@@ -17,6 +18,9 @@ const ACTIVITY_TYPES: { value: ActivityType; label: string; emoji: string; color
   { value: 'award', label: 'Award / Honor', emoji: '🏆', color: 'bg-orange-100 text-orange-800' },
   { value: 'other', label: 'Other', emoji: '⭐', color: 'bg-gray-100 text-gray-700' },
 ];
+
+// Which activity types are considered "high impact" for display
+const HIGH_IMPACT_TYPES: ActivityType[] = ['internship', 'research', 'award'];
 
 const EMPTY_FORM = {
   type: 'volunteering' as ActivityType,
@@ -143,58 +147,40 @@ export default function ActivitiesPage() {
 
   if (!isLoaded || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-navy border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="w-8 h-8 border-2 border-[#ff3b30] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <>
-      <main className="min-h-screen bg-gray-50 pb-28">
-        <div className="max-w-container mx-auto px-4 py-6">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <Link href="/dashboard" className="text-sm text-gray-500 hover:text-navy font-medium mb-1 block">
-                ← Dashboard
-              </Link>
-              <h1 className="text-2xl font-extrabold text-navy">Activities & Experience</h1>
-              <p className="text-sm text-gray-500 mt-1">
-                {activities.length} activit{activities.length !== 1 ? 'ies' : 'y'}
-                {totalHours > 0 && ` · ~${totalHours} hrs/week`}
-              </p>
-            </div>
-            <UserButton appearance={{ elements: { avatarBox: 'w-10 h-10' } }} afterSignOutUrl="/" />
-          </div>
+      <TopNav />
+      <main className="min-h-screen bg-white pt-[90px] pb-28">
+        <div className="max-w-[680px] mx-auto px-6">
 
-          {/* Stats row */}
-          {activities.length > 0 && (
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              {(['volunteering', 'internship', 'extracurricular'] as ActivityType[]).map((type) => {
-                const count = activities.filter((a) => a.type === type).length;
-                const info = getTypeInfo(type);
-                return (
-                  <div key={type} className="bg-white rounded-2xl border border-gray-200 p-3 text-center">
-                    <div className="text-xl mb-1">{info.emoji}</div>
-                    <div className="text-lg font-extrabold text-navy">{count}</div>
-                    <div className="text-xs text-gray-500 capitalize">{type}</div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          {/* Hero */}
+          <div className="mb-10 pt-6">
+            <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">Activities</p>
+            <h1 className="text-[44px] font-[800] tracking-[-2px] text-[#1d1d1f] leading-[1.05]">
+              {activities.length} activit{activities.length !== 1 ? 'ies' : 'y'}.<br />
+              <span className="text-[#ff3b30]">Your story.</span>
+            </h1>
+            <p className="text-[17px] text-[#6e6e73] mt-3">
+              {totalHours > 0 ? `~${totalHours} hrs/week across all activities` : 'Add your extracurriculars, jobs, and honors.'}
+            </p>
+          </div>
 
           {/* Filter chips */}
           {activities.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide">
               <button
                 onClick={() => setFilterType('all')}
                 className={cn(
-                  'flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors',
+                  'flex-shrink-0 text-[13px] font-[600] px-3.5 py-1.5 rounded-full border transition-colors',
                   filterType === 'all'
-                    ? 'bg-navy text-white border-navy'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-navy'
+                    ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
+                    : 'bg-white text-[#6e6e73] border-[#d2d2d7] hover:border-[#1d1d1f]'
                 )}
               >
                 All ({activities.length})
@@ -204,10 +190,10 @@ export default function ActivitiesPage() {
                   key={type.value}
                   onClick={() => setFilterType(type.value)}
                   className={cn(
-                    'flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors whitespace-nowrap',
+                    'flex-shrink-0 text-[13px] font-[600] px-3.5 py-1.5 rounded-full border transition-colors whitespace-nowrap',
                     filterType === type.value
-                      ? 'bg-navy text-white border-navy'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-navy'
+                      ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
+                      : 'bg-white text-[#6e6e73] border-[#d2d2d7] hover:border-[#1d1d1f]'
                   )}
                 >
                   {type.emoji} {type.label} ({activities.filter((a) => a.type === type.value).length})
@@ -218,67 +204,81 @@ export default function ActivitiesPage() {
 
           {/* Empty state */}
           {activities.length === 0 && (
-            <div className="text-center py-16">
-              <div className="text-5xl mb-4">🌟</div>
-              <h2 className="text-xl font-bold text-navy mb-2">Track your experiences</h2>
-              <p className="text-gray-500 mb-2">Add volunteering, internships, clubs, research, and more.</p>
-              <p className="text-sm text-gray-400 mb-6">Colleges look at activities outside the classroom.</p>
+            <div className="text-center py-20">
+              <div className="text-5xl mb-5">🌟</div>
+              <h2 className="text-[22px] font-[700] text-[#1d1d1f] mb-2">Track your experiences</h2>
+              <p className="text-[15px] text-[#6e6e73] mb-2">Add volunteering, internships, clubs, research, and more.</p>
+              <p className="text-[13px] text-[#86868b] mb-8">Colleges look at activities outside the classroom.</p>
               <button
                 onClick={openAdd}
-                className="inline-flex items-center gap-2 bg-coral text-white font-semibold px-6 py-3 rounded-xl hover:bg-coral/90 transition-colors"
+                className="inline-flex items-center gap-2 bg-[#ff3b30] text-white font-[600] px-6 py-3 rounded-xl hover:bg-[#ff3b30]/90 transition-opacity"
               >
                 + Add first activity
               </button>
             </div>
           )}
 
-          {/* Activity list */}
+          {/* Numbered activity list */}
           {filtered.length > 0 && (
-            <div className="space-y-3 mb-6">
-              {filtered.map((activity) => {
+            <div className="mb-8 divide-y divide-[#e8e8ed]">
+              {filtered.map((activity, index) => {
                 const info = getTypeInfo(activity.type);
+                const isHighImpact = HIGH_IMPACT_TYPES.includes(activity.type);
+
                 return (
-                  <div key={activity.id} className="bg-white rounded-2xl border border-gray-200 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3 min-w-0">
-                        <span className="text-2xl flex-shrink-0 mt-0.5">{info.emoji}</span>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-bold text-navy">{activity.title}</h3>
-                            <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-full', info.color)}>
-                              {info.label}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600 mt-0.5">{activity.organization}</p>
-                          {activity.role && (
-                            <p className="text-xs text-gray-400 mt-0.5">{activity.role}</p>
-                          )}
-                          <div className="flex flex-wrap gap-3 mt-2">
-                            <span className="text-xs text-gray-500">{formatDateRange(activity)}</span>
-                            {activity.hours_per_week && (
-                              <span className="text-xs text-gray-500">{activity.hours_per_week} hrs/week</span>
-                            )}
-                          </div>
-                          {activity.description && (
-                            <p className="text-sm text-gray-600 mt-2 leading-relaxed">{activity.description}</p>
-                          )}
-                        </div>
+                  <div key={activity.id} className="flex items-center gap-4 py-4 group hover:bg-[#f5f5f7] rounded-2xl px-3 -mx-3 transition-colors">
+                    {/* Drag handle */}
+                    <span className="text-[18px] text-[#d2d2d7] select-none flex-shrink-0 cursor-grab">⠿</span>
+
+                    {/* Rank number */}
+                    <span className="text-[13px] font-[700] text-[#d2d2d7] w-6 flex-shrink-0 text-center">
+                      {index + 1}
+                    </span>
+
+                    {/* Activity info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                        <span className="text-[15px] font-[600] text-[#1d1d1f] truncate">{activity.title}</span>
                       </div>
-                      <div className="flex flex-col gap-1 flex-shrink-0">
-                        <button
-                          onClick={() => openEdit(activity)}
-                          className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(activity.id)}
-                          disabled={deletingId === activity.id}
-                          className="text-xs text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded-lg hover:bg-red-50 transition-colors"
-                        >
-                          {deletingId === activity.id ? '...' : 'Delete'}
-                        </button>
-                      </div>
+                      <p className="text-[13px] text-[#86868b] truncate">
+                        {activity.organization}
+                        {activity.role ? ` · ${activity.role}` : ''}
+                        {' · '}
+                        {formatDateRange(activity)}
+                        {activity.hours_per_week ? ` · ${activity.hours_per_week} hrs/wk` : ''}
+                      </p>
+                    </div>
+
+                    {/* Category tag */}
+                    <span className="bg-[#f5f5f7] text-[#6e6e73] text-xs px-2.5 py-1 rounded-full font-[500] flex-shrink-0 whitespace-nowrap hidden sm:block">
+                      {info.emoji} {info.label}
+                    </span>
+
+                    {/* Impact badge */}
+                    <span
+                      className={cn(
+                        'text-[12px] font-[600] flex-shrink-0 whitespace-nowrap',
+                        isHighImpact ? 'text-[#ff3b30]' : 'text-[#86868b]'
+                      )}
+                    >
+                      {isHighImpact ? 'High impact' : 'Med impact'}
+                    </span>
+
+                    {/* Actions — visible on hover */}
+                    <div className="flex gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => openEdit(activity)}
+                        className="text-[12px] font-[600] text-[#1d1d1f] px-2.5 py-1.5 rounded-lg hover:bg-[#e8e8ed] transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(activity.id)}
+                        disabled={deletingId === activity.id}
+                        className="text-[12px] font-[600] text-[#86868b] px-2.5 py-1.5 rounded-lg hover:bg-[#e8e8ed] hover:text-[#ff3b30] transition-colors"
+                      >
+                        {deletingId === activity.id ? '...' : 'Delete'}
+                      </button>
                     </div>
                   </div>
                 );
@@ -286,11 +286,11 @@ export default function ActivitiesPage() {
             </div>
           )}
 
-          {/* Add button (when there are activities) */}
+          {/* Add activity button */}
           {activities.length > 0 && (
             <button
               onClick={openAdd}
-              className="w-full py-3 rounded-xl border-2 border-dashed border-gray-300 text-gray-500 font-semibold hover:border-coral hover:text-coral transition-colors text-sm"
+              className="w-full py-3 rounded-xl border border-[#d2d2d7] text-[#1d1d1f] font-[600] text-[14px] hover:bg-[#f5f5f7] transition-colors"
             >
               + Add another activity
             </button>
@@ -300,16 +300,16 @@ export default function ActivitiesPage() {
 
       {/* Add / Edit Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-extrabold text-navy">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-[19px] font-[700] text-[#1d1d1f]">
                   {editingId ? 'Edit Activity' : 'Add Activity'}
                 </h2>
                 <button
                   onClick={() => setShowForm(false)}
-                  className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                  className="text-[#86868b] hover:text-[#1d1d1f] text-2xl leading-none transition-colors"
                 >
                   ×
                 </button>
@@ -318,7 +318,7 @@ export default function ActivitiesPage() {
               <div className="space-y-4">
                 {/* Type */}
                 <div>
-                  <label className="text-sm font-semibold text-navy block mb-1.5">Type *</label>
+                  <label className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] block mb-2">Type</label>
                   <div className="grid grid-cols-2 gap-2">
                     {ACTIVITY_TYPES.map((type) => (
                       <button
@@ -326,10 +326,10 @@ export default function ActivitiesPage() {
                         type="button"
                         onClick={() => setForm((f) => ({ ...f, type: type.value }))}
                         className={cn(
-                          'flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-colors text-left',
+                          'flex items-center gap-2 px-3 py-2.5 rounded-xl border text-[13px] font-[600] transition-colors text-left',
                           form.type === type.value
-                            ? 'border-navy bg-navy text-white'
-                            : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                            ? 'border-[#1d1d1f] bg-[#1d1d1f] text-white'
+                            : 'border-[#e8e8ed] text-[#6e6e73] hover:border-[#1d1d1f]'
                         )}
                       >
                         <span>{type.emoji}</span>
@@ -341,59 +341,61 @@ export default function ActivitiesPage() {
 
                 {/* Title */}
                 <div>
-                  <label className="text-sm font-semibold text-navy block mb-1.5">Title / Activity Name *</label>
+                  <label className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] block mb-2">Title / Activity Name *</label>
                   <input
                     type="text"
                     value={form.title}
                     onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                     placeholder="e.g. Tutor for local food bank"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy"
+                    className="w-full px-4 py-3 border border-[#e8e8ed] rounded-xl text-[14px] text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:border-[#1d1d1f] transition-colors"
                   />
                 </div>
 
                 {/* Organization */}
                 <div>
-                  <label className="text-sm font-semibold text-navy block mb-1.5">Organization *</label>
+                  <label className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] block mb-2">Organization *</label>
                   <input
                     type="text"
                     value={form.organization}
                     onChange={(e) => setForm((f) => ({ ...f, organization: e.target.value }))}
                     placeholder="e.g. City Food Bank"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy"
+                    className="w-full px-4 py-3 border border-[#e8e8ed] rounded-xl text-[14px] text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:border-[#1d1d1f] transition-colors"
                   />
                 </div>
 
                 {/* Role */}
                 <div>
-                  <label className="text-sm font-semibold text-navy block mb-1.5">Your Role <span className="text-gray-400 font-normal">(optional)</span></label>
+                  <label className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] block mb-2">
+                    Your Role <span className="normal-case font-normal text-[#86868b]">(optional)</span>
+                  </label>
                   <input
                     type="text"
                     value={form.role}
                     onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
                     placeholder="e.g. Weekly Volunteer, Summer Intern"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy"
+                    className="w-full px-4 py-3 border border-[#e8e8ed] rounded-xl text-[14px] text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:border-[#1d1d1f] transition-colors"
                   />
                 </div>
 
                 {/* Dates */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-sm font-semibold text-navy block mb-1.5">Start Date *</label>
+                    <label className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] block mb-2">Start Date *</label>
                     <input
                       type="date"
                       value={form.start_date}
                       onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy"
+                      className="w-full px-4 py-3 border border-[#e8e8ed] rounded-xl text-[14px] text-[#1d1d1f] focus:outline-none focus:border-[#1d1d1f] transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-semibold text-navy block mb-1.5">End Date</label>
+                    <label className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] block mb-2">End Date</label>
                     <input
                       type="date"
                       value={form.end_date}
                       disabled={form.is_ongoing}
                       onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy disabled:opacity-40"
+                      className="w-full px-4 py-3 border border-[#e8e8ed] rounded-xl text-[14px] text-[#1d1d1f] focus:outline-none focus:border-[#1d1d1f] transition-colors disabled:opacity-40"
                     />
                   </div>
                 </div>
@@ -403,8 +405,8 @@ export default function ActivitiesPage() {
                   <div
                     onClick={() => setForm((f) => ({ ...f, is_ongoing: !f.is_ongoing, end_date: '' }))}
                     className={cn(
-                      'w-11 h-6 rounded-full transition-colors relative',
-                      form.is_ongoing ? 'bg-navy' : 'bg-gray-200'
+                      'w-11 h-6 rounded-full transition-colors relative flex-shrink-0',
+                      form.is_ongoing ? 'bg-[#1d1d1f]' : 'bg-[#e8e8ed]'
                     )}
                   >
                     <div className={cn(
@@ -412,12 +414,14 @@ export default function ActivitiesPage() {
                       form.is_ongoing ? 'translate-x-5' : 'translate-x-0.5'
                     )} />
                   </div>
-                  <span className="text-sm font-medium text-navy">Still ongoing / present</span>
+                  <span className="text-[14px] font-[500] text-[#1d1d1f]">Still ongoing / present</span>
                 </label>
 
                 {/* Hours per week */}
                 <div>
-                  <label className="text-sm font-semibold text-navy block mb-1.5">Hours per week <span className="text-gray-400 font-normal">(optional)</span></label>
+                  <label className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] block mb-2">
+                    Hours per week <span className="normal-case font-normal text-[#86868b]">(optional)</span>
+                  </label>
                   <input
                     type="number"
                     min="1"
@@ -425,21 +429,21 @@ export default function ActivitiesPage() {
                     value={form.hours_per_week}
                     onChange={(e) => setForm((f) => ({ ...f, hours_per_week: e.target.value }))}
                     placeholder="e.g. 5"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy"
+                    className="w-full px-4 py-3 border border-[#e8e8ed] rounded-xl text-[14px] text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:border-[#1d1d1f] transition-colors"
                   />
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="text-sm font-semibold text-navy block mb-1.5">
-                    Description <span className="text-gray-400 font-normal">(optional — use for college essay notes)</span>
+                  <label className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] block mb-2">
+                    Description <span className="normal-case font-normal text-[#86868b]">(optional)</span>
                   </label>
                   <textarea
                     value={form.description}
                     onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                     placeholder="What did you do? What impact did you make? What did you learn?"
                     rows={3}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy resize-none"
+                    className="w-full px-4 py-3 border border-[#e8e8ed] rounded-xl text-[14px] text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:border-[#1d1d1f] transition-colors resize-none"
                   />
                 </div>
               </div>
@@ -447,14 +451,14 @@ export default function ActivitiesPage() {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setShowForm(false)}
-                  className="flex-1 py-3 rounded-xl border-2 border-gray-200 text-navy font-semibold hover:border-gray-300 transition-colors"
+                  className="flex-1 py-3 rounded-xl border border-[#d2d2d7] text-[#1d1d1f] font-[600] hover:bg-[#f5f5f7] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving || !form.title || !form.organization || !form.start_date}
-                  className="flex-1 py-3 rounded-xl bg-coral text-white font-semibold hover:bg-coral/90 disabled:opacity-50 transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-[#ff3b30] text-white font-[600] hover:bg-[#ff3b30]/90 disabled:opacity-50 transition-opacity"
                 >
                   {saving ? 'Saving...' : editingId ? 'Save changes' : 'Add activity'}
                 </button>

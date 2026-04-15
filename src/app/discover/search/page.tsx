@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import DashboardSidebar from '@/components/DashboardSidebar';
+import TopNav from '@/components/TopNav';
 
 interface College {
   id: string;
@@ -16,6 +16,67 @@ interface College {
   size: string;
   majors_offered: string[];
 }
+
+const uniDomains: Record<string, { domain: string; color: string }> = {
+  Stanford: { domain: 'stanford.edu', color: '#8C1515' },
+  Harvard: { domain: 'harvard.edu', color: '#A51C30' },
+  MIT: { domain: 'mit.edu', color: '#750014' },
+  Yale: { domain: 'yale.edu', color: '#00356B' },
+  Princeton: { domain: 'princeton.edu', color: '#FF6900' },
+  Columbia: { domain: 'columbia.edu', color: '#003DA5' },
+  UPenn: { domain: 'upenn.edu', color: '#011F5B' },
+  Duke: { domain: 'duke.edu', color: '#003087' },
+  Northwestern: { domain: 'northwestern.edu', color: '#4E2A84' },
+  Michigan: { domain: 'umich.edu', color: '#00274C' },
+};
+
+function getUniMeta(name: string): { domain: string; color: string } | null {
+  for (const [key, val] of Object.entries(uniDomains)) {
+    if (name.toLowerCase().includes(key.toLowerCase())) return val;
+  }
+  return null;
+}
+
+function CollegeLogo({ name }: { name: string }) {
+  const [imgError, setImgError] = useState(false);
+  const meta = getUniMeta(name);
+  const initials = name
+    .split(' ')
+    .filter((w) => w.length > 2)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('');
+
+  const bgColor = meta?.color ?? '#1d1d1f';
+
+  if (meta && !imgError) {
+    return (
+      <div
+        className="w-12 h-12 rounded-[13px] flex items-center justify-center overflow-hidden shrink-0"
+        style={{ backgroundColor: bgColor }}
+      >
+        <img
+          src={`https://logo.clearbit.com/${meta.domain}`}
+          alt={name}
+          className="w-8 h-8 object-contain"
+          onError={() => setImgError(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="w-12 h-12 rounded-[13px] flex items-center justify-center shrink-0"
+      style={{ backgroundColor: bgColor }}
+    >
+      <span className="text-white text-[13px] font-[700]">{initials || name[0]}</span>
+    </div>
+  );
+}
+
+const inputClass =
+  'border border-[#d2d2d7] rounded-xl px-3 py-2 text-[13px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:border-[#ff3b30] transition-colors bg-white';
 
 export default function CollegeSearchPage() {
   const router = useRouter();
@@ -64,44 +125,135 @@ export default function CollegeSearchPage() {
 
   return (
     <>
-      <DashboardSidebar />
-      <main className="min-h-screen bg-gray-50 ml-64 py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <h1 className="text-3xl font-bold text-navy mb-2">Discover Colleges</h1>
-          <p className="text-gray-600 mb-8">Search and filter colleges that match your profile</p>
-
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-8">
-            <h2 className="text-lg font-semibold text-navy mb-4">Filter Colleges</h2>
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
-              <input type="number" placeholder="Min SAT" value={filters.sat_min} onChange={(e) => setFilters({...filters, sat_min: e.target.value})} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
-              <input type="number" placeholder="Max SAT" value={filters.sat_max} onChange={(e) => setFilters({...filters, sat_max: e.target.value})} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
-              <input type="number" placeholder="Max Accept %" value={filters.acceptance_rate_max} onChange={(e) => setFilters({...filters, acceptance_rate_max: e.target.value})} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
-              <select value={filters.size} onChange={(e) => setFilters({...filters, size: e.target.value})} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20"><option value="">Size</option><option value="small">Small</option><option value="medium">Medium</option><option value="large">Large</option></select>
-              <input type="text" placeholder="Location" value={filters.location} onChange={(e) => setFilters({...filters, location: e.target.value})} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
-              <input type="text" placeholder="Major" value={filters.major} onChange={(e) => setFilters({...filters, major: e.target.value})} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20" />
-            </div>
-            <button onClick={handleFilter} className="bg-coral hover:bg-coral/90 text-white font-semibold px-6 py-2 rounded-lg transition-colors">Search</button>
+      <TopNav />
+      <main className="min-h-screen bg-white pt-[90px] pb-28">
+        <div className="max-w-5xl mx-auto px-6">
+          {/* Hero */}
+          <div className="mb-10">
+            <h1 className="text-[34px] font-[700] tracking-[-0.5px] text-[#1d1d1f] leading-tight">
+              Discover <span className="text-[#ff3b30]">Colleges</span>
+            </h1>
+            <p className="text-[15px] text-[#86868b] mt-1">
+              Search and filter colleges that match your profile
+            </p>
           </div>
 
-          {error && <div className="bg-red-50 text-red-700 rounded-lg p-4 mb-6">{error}</div>}
+          {/* Filters */}
+          <div className="bg-[#f5f5f7] rounded-2xl p-6 mb-8">
+            <h2 className="text-[13px] font-[600] text-[#86868b] uppercase tracking-wide mb-4">
+              Filter Colleges
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
+              <input
+                type="number"
+                placeholder="Min SAT"
+                value={filters.sat_min}
+                onChange={(e) => setFilters({ ...filters, sat_min: e.target.value })}
+                className={inputClass}
+              />
+              <input
+                type="number"
+                placeholder="Max SAT"
+                value={filters.sat_max}
+                onChange={(e) => setFilters({ ...filters, sat_max: e.target.value })}
+                className={inputClass}
+              />
+              <input
+                type="number"
+                placeholder="Max Accept %"
+                value={filters.acceptance_rate_max}
+                onChange={(e) => setFilters({ ...filters, acceptance_rate_max: e.target.value })}
+                className={inputClass}
+              />
+              <select
+                value={filters.size}
+                onChange={(e) => setFilters({ ...filters, size: e.target.value })}
+                className={inputClass}
+              >
+                <option value="">Size</option>
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Location"
+                value={filters.location}
+                onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                className={inputClass}
+              />
+              <input
+                type="text"
+                placeholder="Major"
+                value={filters.major}
+                onChange={(e) => setFilters({ ...filters, major: e.target.value })}
+                className={inputClass}
+              />
+            </div>
+            <button
+              onClick={handleFilter}
+              className="bg-[#ff3b30] hover:bg-[#e6352b] text-white font-[600] text-[14px] px-6 py-2 rounded-xl transition-colors"
+            >
+              Search
+            </button>
+          </div>
+
+          {error && (
+            <div className="bg-[rgba(255,59,48,0.06)] border border-[#ff3b30]/20 text-[#ff3b30] rounded-2xl p-4 mb-6 text-[13px]">
+              {error}
+            </div>
+          )}
 
           {loading ? (
-            <div className="flex justify-center py-12"><div className="w-8 h-8 border-2 border-navy border-t-transparent rounded-full animate-spin" /></div>
+            <div className="flex justify-center py-16">
+              <div className="w-8 h-8 border-2 border-[#ff3b30] border-t-transparent rounded-full animate-spin" />
+            </div>
           ) : colleges.length === 0 ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-12 text-center"><p className="text-gray-600">No colleges found</p></div>
+            <div className="bg-[#f5f5f7] rounded-2xl p-12 text-center">
+              <p className="text-[15px] text-[#86868b]">No colleges found</p>
+            </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {colleges.map((c) => (
-                <Link key={c.id} href={`/discover/college/${c.id}`} className="block bg-white rounded-2xl border border-gray-200 p-6 hover:border-coral hover:shadow-lg transition-all">
-                  <div className="flex items-start justify-between mb-3">
-                    <div><h3 className="text-lg font-bold text-navy">{c.name}</h3><p className="text-sm text-gray-600">{c.location}</p></div>
-                    <div className="text-right"><div className="text-2xl font-bold text-coral">85%</div><div className="text-xs text-gray-600">Fit Score</div></div>
+                <Link
+                  key={c.id}
+                  href={`/discover/college/${c.id}`}
+                  className="flex items-center gap-4 bg-[#f5f5f7] rounded-2xl p-5 hover:shadow-sm transition-shadow group"
+                >
+                  <CollegeLogo name={c.name} />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-[15px] font-[600] text-[#1d1d1f] group-hover:text-[#ff3b30] transition-colors truncate">
+                      {c.name}
+                    </h3>
+                    <p className="text-[13px] text-[#86868b] mt-0.5">{c.location}</p>
                   </div>
-                  <div className="grid grid-cols-4 gap-4 text-sm">
-                    <div><p className="text-gray-600">SAT</p><p className="font-semibold text-navy">{c.sat_25th} - {c.sat_75th}</p></div>
-                    <div><p className="text-gray-600">Acceptance</p><p className="font-semibold text-navy">{Math.round(c.acceptance_rate * 100)}%</p></div>
-                    <div><p className="text-gray-600">Cost</p><p className="font-semibold text-navy">${(c.tuition_out_of_state / 1000).toFixed(0)}k</p></div>
-                    <div><p className="text-gray-600">Size</p><p className="font-semibold text-navy capitalize">{c.size}</p></div>
+                  <div className="hidden md:grid grid-cols-4 gap-6 shrink-0">
+                    <div className="text-center">
+                      <p className="text-[11px] text-[#86868b] mb-0.5">SAT</p>
+                      <p className="text-[13px] font-[600] text-[#1d1d1f]">
+                        {c.sat_25th}–{c.sat_75th}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[11px] text-[#86868b] mb-0.5">Acceptance</p>
+                      <p className="text-[13px] font-[600] text-[#1d1d1f]">
+                        {Math.round(c.acceptance_rate * 100)}%
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[11px] text-[#86868b] mb-0.5">Cost</p>
+                      <p className="text-[13px] font-[600] text-[#1d1d1f]">
+                        ${(c.tuition_out_of_state / 1000).toFixed(0)}k
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[11px] text-[#86868b] mb-0.5">Size</p>
+                      <p className="text-[13px] font-[600] text-[#1d1d1f] capitalize">{c.size}</p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-[22px] font-[700] text-[#ff3b30]">85%</div>
+                    <div className="text-[11px] text-[#86868b]">Fit Score</div>
                   </div>
                 </Link>
               ))}

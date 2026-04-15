@@ -211,6 +211,75 @@ export interface TestScore {
   created_at: string;
 }
 
+// ── CIRCLE TYPES ──────────────────────────────────────────────
+export type CirclePrivacyMode = 'open' | 'effort_only' | 'private';
+export type CircleReaction = 'fire' | 'muscle' | 'heart';
+export type CircleActivityType =
+  | 'essay_done'
+  | 'streak'
+  | 'deadline_met'
+  | 'school_added'
+  | 'submitted'
+  | 'custom';
+
+export interface Circle {
+  id: string;
+  created_by: string;
+  invite_code: string;
+  privacy_mode: CirclePrivacyMode;
+  created_at: string;
+}
+
+export interface CircleMember {
+  id: string;
+  circle_id: string;
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  joined_at: string;
+}
+
+export interface CircleActivity {
+  id: string;
+  circle_id: string;
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  activity_type: CircleActivityType;
+  content: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  reactions?: CircleReactionCount[];
+  user_reactions?: CircleReaction[];
+}
+
+export interface CircleReactionCount {
+  reaction: CircleReaction;
+  count: number;
+}
+
+export interface CircleChallenge {
+  id: string;
+  circle_id: string;
+  title: string;
+  description: string | null;
+  due_date: string | null;
+  created_by: string;
+  created_at: string;
+  member_count?: number;
+  user_joined?: boolean;
+  user_completed?: boolean;
+}
+
+export interface CircleData {
+  circle: Circle;
+  members: CircleMember[];
+  activities: CircleActivity[];
+  challenges: CircleChallenge[];
+  invite_url: string;
+}
+// ──────────────────────────────────────────────────────────────
+
 export interface Interview {
   id: string;
   user_id: string;
