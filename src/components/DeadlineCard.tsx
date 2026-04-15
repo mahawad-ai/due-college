@@ -4,81 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { DeadlineWithCollege } from '@/lib/types';
 import { formatDate, formatDaysRemaining, getDeadlineTypeColor, cn } from '@/lib/utils';
+import CollegeLogo from '@/components/CollegeLogo';
 
 interface DeadlineCardProps {
   deadline: DeadlineWithCollege;
   onToggleSubmitted?: (deadlineId: string, submitted: boolean) => Promise<void>;
-}
-
-// Brand colors for top schools
-const BRAND_COLORS: Record<string, string> = {
-  'stanford':     '#8C1515',
-  'harvard':      '#A51C30',
-  'mit':          '#750014',
-  'yale':         '#00356B',
-  'princeton':    '#E77500',
-  'columbia':     '#B9D9EB',
-  'upenn':        '#011F5B',
-  'penn':         '#011F5B',
-  'duke':         '#003087',
-  'northwestern': '#4E2A84',
-  'michigan':     '#00274C',
-  'ucla':         '#003B5C',
-  'usc':          '#990000',
-  'nyu':          '#57068C',
-  'georgetown':   '#041E42',
-  'vanderbilt':   '#866D4B',
-  'emory':        '#012169',
-  'notre dame':   '#0C2340',
-  'rice':         '#00205B',
-  'tufts':        '#3E8EDE',
-  'boston':       '#CC0000',
-  'bu':           '#CC0000',
-  'bc':           '#8A0000',
-};
-
-function getBrandColor(name: string): string {
-  const lower = name.toLowerCase();
-  for (const [key, color] of Object.entries(BRAND_COLORS)) {
-    if (lower.includes(key)) return color;
-  }
-  return '#1d1d1f';
-}
-
-function UniLogo({ college }: { college: DeadlineWithCollege['college'] }) {
-  const [imgFailed, setImgFailed] = useState(false);
-  const name = college.name;
-  const initial = name.charAt(0).toUpperCase();
-  const bgColor = getBrandColor(name);
-
-  const domain = college.website
-    ? college.website.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]
-    : null;
-
-  if (!domain || imgFailed) {
-    return (
-      <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
-        style={{ backgroundColor: bgColor }}
-      >
-        <span className="text-white text-[14px] font-[800]">{initial}</span>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm"
-      style={{ backgroundColor: bgColor }}
-    >
-      <img
-        src={`https://logo.clearbit.com/${domain}`}
-        alt={name}
-        className="w-full h-full object-contain p-[3px]"
-        onError={() => setImgFailed(true)}
-      />
-    </div>
-  );
 }
 
 function urgencyDotColor(urgency: string, submitted: boolean): string {
@@ -125,7 +55,7 @@ export default function DeadlineCard({ deadline, onToggleSubmitted }: DeadlineCa
       <div className="flex items-center justify-between gap-3">
         {/* Left: logo + name + meta */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <UniLogo college={deadline.college} />
+          <CollegeLogo name={deadline.college.name} website={deadline.college.website} size="sm" />
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span

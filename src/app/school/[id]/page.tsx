@@ -7,6 +7,7 @@ import Link from 'next/link';
 import TopNav from '@/components/TopNav';
 import MobileNav from '@/components/MobileNav';
 import DeadlineTable from '@/components/DeadlineTable';
+import CollegeLogo from '@/components/CollegeLogo';
 import { College, Deadline, CustomDeadline, ChecklistItem, AppStatus } from '@/lib/types';
 import { getDaysRemaining, generateCalendarEvent, cn } from '@/lib/utils';
 
@@ -212,31 +213,7 @@ export default function SchoolDetailPage() {
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-4 flex-1">
                 {/* University logo */}
-                {(() => {
-                  const domain = college.website
-                    ? college.website.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]
-                    : null;
-                  const initial = college.name.charAt(0).toUpperCase();
-                  return domain ? (
-                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-[#1d1d1f] flex items-center justify-center shrink-0 shadow-sm">
-                      <img
-                        src={`https://logo.clearbit.com/${domain}`}
-                        alt={college.name}
-                        className="w-full h-full object-contain p-1"
-                        onError={(e) => {
-                          const t = e.currentTarget;
-                          t.style.display = 'none';
-                          const fb = t.parentElement;
-                          if (fb) fb.innerHTML = `<span style="color:white;font-size:22px;font-weight:800;">${initial}</span>`;
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-14 h-14 rounded-xl bg-[#1d1d1f] flex items-center justify-center shrink-0 shadow-sm">
-                      <span className="text-white text-[22px] font-[800]">{initial}</span>
-                    </div>
-                  );
-                })()}
+                <CollegeLogo name={college.name} website={college.website} size="lg" />
                 <div>
                   <h1 className="text-2xl font-[800] text-[#1d1d1f] tracking-tight mb-1">{college.name}</h1>
                   {college.city && <p className="text-[#86868b]">{college.city}, {college.state}</p>}
