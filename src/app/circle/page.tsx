@@ -182,6 +182,11 @@ export default function CirclePage() {
   const [joiningChallenge, setJoiningChallenge] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [togglingReaction, setTogglingReaction] = useState<string | null>(null);
+  const [showCreateChallenge, setShowCreateChallenge] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newDesc, setNewDesc] = useState('');
+  const [newDueDate, setNewDueDate] = useState('');
+  const [creatingChallenge, setCreatingChallenge] = useState(false);
 
   // Fetch circle data
   const fetchCircle = useCallback(async () => {
@@ -309,6 +314,37 @@ export default function CirclePage() {
       // silently fail
     } finally {
       setJoiningChallenge(null);
+    }
+  }
+
+  // Create a challenge
+  async function handleCreateChallenge(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newTitle.trim() || creatingChallenge) return;
+    setCreatingChallenge(true);
+    try {
+      const res = await fetch('/api/circle/challenges', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          description: newDesc.trim() || null,
+          due_date: newDueDate || null,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      const { challenge } = await res.json();
+      setData((prev) =>
+        prev ? { ...prev, challenges: [{ ...challenge, member_count: 1, user_joined: true }, ...prev.challenges] } : prev
+      );
+      setNewTitle('');
+      setNewDesc('');
+      setNewDueDate('');
+      setShowCreateChallenge(false);
+    } catch {
+      // silently fail
+    } finally {
+      setCreatingChallenge(false);
     }
   }
 
@@ -516,11 +552,72 @@ export default function CirclePage() {
               </section>
 
               {/* ── Challenges ─────────────────────────────────── */}
-              {data.challenges.length > 0 && (
-                <section>
-                  <h2 className="text-[13px] font-[600] text-[#6e6e73] uppercase tracking-[0.05em] mb-3">
+              <section>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-[13px] font-[600] text-[#6e6e73] uppercase tracking-[0.05em]">
                     Challenges
                   </h2>
+                  <button
+                    onClick={() => setShowCreateChallenge((v) => !v)}
+                    className="text-[13px] font-[600] text-[#ff3b30] hover:opacity-75 transition-opacity"
+                  >
+                    {showCreateChallenge ? 'Cancel' : '+ New Challenge'}
+                  </button>
+                </div>
+
+                {/* Create challenge form */}
+                {showCreateChallenge && (
+                  <form
+                    onSubmit={handleCreateChallenge}
+                    className="bg-[#f5f5f7] rounded-2xl p-5 mb-4 flex flex-col gap-3"
+                  >
+                    <div>
+                      <label className="text-[11px] font-[700] text-[#86868b] uppercase tracking-[0.05em] mb-1.5 block">
+                        Challenge title *
+                      </label>
+                      <input
+                        type="text"
+                        value={newTitle}
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        placeholder="e.g. Finish one essay by Sunday"
+                        required
+                        className="w-full bg-white border border-[#e8e8ed] rounded-xl px-4 py-2.5 text-[14px] text-[#1d1d1f] placeholder:text-[#aeaeb2] focus:outline-none focus:ring-2 focus:ring-[#ff3b30]/20 focus:border-[#ff3b30]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-[700] text-[#86868b] uppercase tracking-[0.05em] mb-1.5 block">
+                        Description (optional)
+                      </label>
+                      <textarea
+                        value={newDesc}
+                        onChange={(e) => setNewDesc(e.target.value)}
+                        placeholder="What does everyone need to do?"
+                        rows={2}
+                        className="w-full bg-white border border-[#e8e8ed] rounded-xl px-4 py-2.5 text-[14px] text-[#1d1d1f] placeholder:text-[#aeaeb2] focus:outline-none focus:ring-2 focus:ring-[#ff3b30]/20 focus:border-[#ff3b30] resize-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-[700] text-[#86868b] uppercase tracking-[0.05em] mb-1.5 block">
+                        Due date (optional)
+                      </label>
+                      <input
+                        type="date"
+                        value={newDueDate}
+                        onChange={(e) => setNewDueDate(e.target.value)}
+                        className="bg-white border border-[#e8e8ed] rounded-xl px-4 py-2.5 text-[14px] text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#ff3b30]/20 focus:border-[#ff3b30]"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={!newTitle.trim() || creatingChallenge}
+                      className="self-start px-6 py-2.5 bg-[#ff3b30] text-white text-[14px] font-[700] rounded-full hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {creatingChallenge ? 'Creating…' : 'Create Challenge'}
+                    </button>
+                  </form>
+                )}
+
+                {data.challenges.length > 0 && (
                   <div className="flex flex-col gap-3">
                     {data.challenges.map((challenge: CircleChallenge) => (
                       <div
@@ -595,8 +692,14 @@ export default function CirclePage() {
                       </div>
                     ))}
                   </div>
-                </section>
-              )}
+                )}
+
+                {data.challenges.length === 0 && !showCreateChallenge && (
+                  <p className="text-[14px] text-[#86868b] py-2">
+                    No challenges yet — create one to get your circle moving!
+                  </p>
+                )}
+              </section>
 
               {/* ── Invite Section ─────────────────────────────── */}
               <section className="pb-4">
