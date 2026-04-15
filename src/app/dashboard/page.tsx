@@ -152,7 +152,7 @@ export default function DashboardPage() {
               Everything you need to manage your college applications — all in one place.
             </p>
             <div className="flex items-center gap-4 flex-wrap">
-              <Link href="/school"
+              <Link href="/deadlines"
                 className="text-[14px] font-[600] text-[#ff3b30] hover:opacity-75 transition-opacity">
                 View deadlines →
               </Link>
@@ -231,7 +231,7 @@ export default function DashboardPage() {
           {deadlines.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               {/* Dark deadlines card */}
-              <Link href="/school"
+              <Link href="/deadlines"
                 className="bg-[#1d1d1f] rounded-3xl p-8 flex flex-col justify-between no-underline group overflow-hidden relative"
                 style={{ minHeight: 220 }}>
                 <div>
