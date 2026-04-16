@@ -9,7 +9,7 @@ import MobileNav from '@/components/MobileNav';
 import DeadlineTable from '@/components/DeadlineTable';
 import CollegeLogo from '@/components/CollegeLogo';
 import { College, Deadline, CustomDeadline, ChecklistItem, AppStatus } from '@/lib/types';
-import { getDaysRemaining, generateCalendarEvent, cn } from '@/lib/utils';
+import { getDaysRemaining, cn } from '@/lib/utils';
 
 const APP_STATUS_CONFIG: Record<AppStatus, { label: string; color: string }> = {
   not_started: { label: 'Not Started', color: 'bg-[#f5f5f7] text-[#86868b]' },
@@ -110,23 +110,6 @@ export default function SchoolDetailPage() {
     }
   }
 
-  function handleDownloadCalendar(deadline: Deadline) {
-    if (!college) return;
-    const ics = generateCalendarEvent({
-      college: college.name,
-      type: deadline.type,
-      date: deadline.date,
-      time: deadline.time || undefined,
-    });
-    const blob = new Blob([ics], { type: 'text/calendar' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${college.name.replace(/\s+/g, '-')}-${deadline.type}.ics`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
   function handleCustomSaved(deadline: CustomDeadline) {
     setCustomDeadlines((prev) => {
       const idx = prev.findIndex((d) => d.id === deadline.id);
@@ -166,8 +149,6 @@ export default function SchoolDetailPage() {
     .map((d) => ({ ...d, days: getDaysRemaining(d.date) }))
     .filter((d) => d.days >= 0)
     .sort((a, b) => a.days - b.days)[0];
-
-  const canExportCalendar = subscription === 'plus' || subscription === 'family';
 
   if (loading) {
     return (
@@ -317,10 +298,8 @@ export default function SchoolDetailPage() {
                 submittedIds={submittedIds}
                 deadlineNotes={deadlineNotes}
                 onToggleSubmitted={isSignedIn ? handleToggleSubmitted : undefined}
-                onDownloadCalendar={handleDownloadCalendar}
                 onCustomDeadlineSaved={handleCustomSaved}
                 onCustomDeadlineDeleted={handleCustomDeleted}
-                canExportCalendar={canExportCalendar}
                 showAddButton={!!isSignedIn}
               />
             ) : (
@@ -341,17 +320,6 @@ export default function SchoolDetailPage() {
             )}
           </div>
 
-          {/* Calendar export upgrade prompt */}
-          {!canExportCalendar && isSignedIn && deadlines.length > 0 && (
-            <div className="bg-[#ff9f0a]/10 border border-[#ff9f0a]/20 rounded-2xl p-4 mb-6">
-              <p className="text-sm font-medium text-[#1d1d1f]">
-                📅 Upgrade to Plus to export deadlines to Google Calendar
-              </p>
-              <Link href="/upgrade" className="text-sm text-[#ff3b30] font-semibold hover:underline mt-1 block">
-                Upgrade for $4.99/month →
-              </Link>
-            </div>
-          )}
 
           {/* Affiliate Section */}
           {soonestDeadline && (

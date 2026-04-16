@@ -15,10 +15,8 @@ interface DeadlineTableProps {
   submittedIds?: Set<string>;
   deadlineNotes?: Map<string, string>;
   onToggleSubmitted?: (deadlineId: string, submitted: boolean, isCustom?: boolean) => Promise<void>;
-  onDownloadCalendar?: (deadline: Deadline) => void;
   onCustomDeadlineSaved?: (deadline: CustomDeadline) => void;
   onCustomDeadlineDeleted?: (id: string) => void;
-  canExportCalendar?: boolean;
   showAddButton?: boolean;
 }
 
@@ -30,10 +28,8 @@ export default function DeadlineTable({
   submittedIds = new Set(),
   deadlineNotes = new Map(),
   onToggleSubmitted,
-  onDownloadCalendar,
   onCustomDeadlineSaved,
   onCustomDeadlineDeleted,
-  canExportCalendar = false,
   showAddButton = false,
 }: DeadlineTableProps) {
   const [localSubmitted, setLocalSubmitted] = useState<Set<string>>(new Set(submittedIds));
@@ -291,15 +287,6 @@ export default function DeadlineTable({
                             title="Add note"
                           >
                             {note ? '📝' : '+ Note'}
-                          </button>
-                        )}
-                        {/* Cal export */}
-                        {canExportCalendar && onDownloadCalendar && !deadline.isCustom && (
-                          <button
-                            onClick={() => onDownloadCalendar(deadline as Deadline)}
-                            className="text-xs text-blue-600 hover:text-blue-800 font-medium whitespace-nowrap"
-                          >
-                            + Cal
                           </button>
                         )}
                         {/* Mark done toggle */}
