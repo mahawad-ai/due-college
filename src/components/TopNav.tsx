@@ -12,6 +12,7 @@ const navItems = [
   { name: 'Discover',    path: '/discover/search' },
   { name: 'Activities',  path: '/activities' },
   { name: 'Circle',      path: '/circle' },
+  { name: 'Parent',      path: '/invite' },
 ];
 
 export default function TopNav() {

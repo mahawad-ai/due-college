@@ -276,33 +276,31 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── Invite Parent card (full-width) ── */}
-          {deadlines.length > 0 && (
-            <Link
-              href="/invite"
-              className="block bg-gradient-to-br from-[#fff5f5] via-[#fff8f0] to-[#fff5eb] rounded-3xl p-6 md:p-8 mb-8 no-underline group overflow-hidden relative border border-[#ffe0db]"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-14 h-14 rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex items-center justify-center flex-shrink-0 text-[28px]">
-                    👪
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-[700] text-[#ff3b30] uppercase tracking-[0.6px] mb-1">For Parents</p>
-                    <h3 className="text-[18px] md:text-[20px] font-[700] text-[#1d1d1f] tracking-[-0.3px] leading-tight mb-1">
-                      Invite a parent or guardian
-                    </h3>
-                    <p className="text-[13px] text-[#6e6e73] leading-relaxed">
-                      They&apos;ll see your deadlines, send nudges, and get a pulse brief.
-                    </p>
-                  </div>
+          {/* ── Invite Parent card (always visible) ── */}
+          <Link
+            href="/invite"
+            className="block bg-gradient-to-br from-[#fff5f5] via-[#fff8f0] to-[#fff5eb] rounded-3xl p-6 md:p-8 mb-8 no-underline group overflow-hidden relative border border-[#ffe0db]"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="w-14 h-14 rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex items-center justify-center flex-shrink-0 text-[28px]">
+                  👪
                 </div>
-                <span className="text-[13px] font-[600] text-[#ff3b30] group-hover:opacity-75 transition-opacity flex-shrink-0 hidden md:inline">
-                  Invite →
-                </span>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-[700] text-[#ff3b30] uppercase tracking-[0.6px] mb-1">For Parents</p>
+                  <h3 className="text-[18px] md:text-[20px] font-[700] text-[#1d1d1f] tracking-[-0.3px] leading-tight mb-1">
+                    Invite a parent or guardian
+                  </h3>
+                  <p className="text-[13px] text-[#6e6e73] leading-relaxed">
+                    They&apos;ll see your deadlines, send nudges, and get a pulse brief.
+                  </p>
+                </div>
               </div>
-            </Link>
-          )}
+              <span className="text-[13px] font-[600] text-[#ff3b30] group-hover:opacity-75 transition-opacity flex-shrink-0 hidden md:inline">
+                Invite →
+              </span>
+            </div>
+          </Link>
 
           {syncing && <div className="bg-[#f5f5f7] text-[#6e6e73] rounded-2xl p-3 mb-6 text-sm font-medium">Syncing your schools...</div>}
           {error && <div className="bg-red-50 text-red-700 rounded-2xl p-3 mb-6 text-sm">{error}</div>}
