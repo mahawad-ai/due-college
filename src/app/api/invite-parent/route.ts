@@ -52,8 +52,10 @@ export async function POST(req: NextRequest) {
   const accessToken = connection.access_token;
 
   // Send parent invite email
+  let emailSent = false;
+  let emailError: string | null = null;
   try {
-    await getResend().emails.send({
+    const result = await getResend().emails.send({
       from: 'due.college <reminders@due.college>',
       to: email,
       subject: `${studentName} added you to their college deadline tracker`,
@@ -64,10 +66,13 @@ export async function POST(req: NextRequest) {
         accessToken,
       }),
     });
+    // Resend returns { id } on success; an error property means it failed
+    emailSent = !!(result as { id?: string }).id;
+    if (!emailSent) emailError = 'Email provider returned an unexpected response.';
   } catch (e) {
     console.error('Email send failed:', e);
-    // Don't fail the request if email fails
+    emailError = e instanceof Error ? e.message : 'Failed to send email.';
   }
 
-  return NextResponse.json({ success: true, accessToken });
+  return NextResponse.json({ success: true, accessToken, emailSent, emailError });
 }

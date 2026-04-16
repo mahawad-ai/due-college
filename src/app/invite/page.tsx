@@ -11,6 +11,8 @@ export default function InvitePage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '' });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [accessToken, setAccessToken] = useState('');
   const [error, setError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
@@ -29,6 +31,8 @@ export default function InvitePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to send invite');
+      setEmailSent(data.emailSent ?? false);
+      setAccessToken(data.accessToken || '');
       setSuccess(true);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
@@ -38,24 +42,61 @@ export default function InvitePage() {
   }
 
   if (success) {
+    const parentUrl = accessToken ? `${typeof window !== 'undefined' ? window.location.origin : 'https://due.college'}/parent/${accessToken}` : '';
+
     return (
       <>
         <TopNav />
         <main className="min-h-screen bg-white flex flex-col items-center justify-center px-4 pb-24 pt-[52px]">
-          <div className="max-w-container w-full text-center">
-            <div className="text-6xl mb-6">🎉</div>
-            <h1 className="text-3xl font-extrabold text-navy mb-3">Invite sent!</h1>
-            <p className="text-gray-500 mb-2">
-              <strong>{form.name}</strong> will receive an email with a link to your read-only deadline dashboard.
-            </p>
-            {form.phone && (
-              <p className="text-gray-500 mb-6">
-                They can also opt in for SMS reminders from that email.
-              </p>
+          <div className="max-w-container w-full">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">{emailSent ? '🎉' : '⚠️'}</div>
+              <h1 className="text-3xl font-extrabold text-navy mb-2">
+                {emailSent ? 'Invite sent!' : 'Link ready — email may not have arrived'}
+              </h1>
+              {emailSent ? (
+                <p className="text-gray-500">
+                  <strong>{form.name}</strong> will receive an email with a link to your read-only deadline dashboard.
+                </p>
+              ) : (
+                <p className="text-gray-500">
+                  The parent connection was created, but the invite email may not have been delivered.
+                  Share the link below with <strong>{form.name}</strong> directly.
+                </p>
+              )}
+            </div>
+
+            {/* Always show the shareable link */}
+            {parentUrl && (
+              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-6">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                  Parent view link — share this directly
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    readOnly
+                    value={parentUrl}
+                    className="flex-1 text-sm text-gray-700 bg-white border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none"
+                    onFocus={e => e.target.select()}
+                  />
+                  <button
+                    onClick={() => navigator.clipboard.writeText(parentUrl)}
+                    className="px-4 py-2.5 bg-navy text-white text-sm font-semibold rounded-xl hover:bg-navy/90 transition-colors whitespace-nowrap"
+                  >
+                    Copy
+                  </button>
+                </div>
+                {form.phone && (
+                  <p className="text-xs text-gray-400 mt-2">
+                    {form.name} can also opt in for SMS reminders from the dashboard.
+                  </p>
+                )}
+              </div>
             )}
+
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 bg-navy text-white font-semibold px-6 py-3 rounded-xl hover:bg-navy/90 transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-navy text-white font-semibold px-6 py-3 rounded-xl hover:bg-navy/90 transition-colors"
             >
               Back to Dashboard
             </Link>
