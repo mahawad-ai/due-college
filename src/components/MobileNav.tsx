@@ -18,12 +18,12 @@ const items = [
     icon: <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} className="w-[22px] h-[22px]"><path d="M11 4H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2v-5"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
   },
   {
-    name: 'Discover', path: '/discover/search',
-    icon: <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} className="w-[22px] h-[22px]"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>,
-  },
-  {
     name: 'Circle', path: '/circle',
     icon: <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} className="w-[22px] h-[22px]"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>,
+  },
+  {
+    name: 'More', path: '/more',
+    icon: <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} className="w-[22px] h-[22px]"><circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>,
   },
 ];
 
@@ -36,7 +36,11 @@ export default function MobileNav() {
     >
       <div className="flex justify-around pt-2">
         {items.map((item) => {
-          const active = pathname === item.path || (item.path !== '/dashboard' && pathname.startsWith(item.path));
+          // "More" is active for any page not covered by the main tabs
+          const mainPaths = ['/dashboard', '/deadlines', '/essays', '/circle'];
+          const active = item.path === '/more'
+            ? !mainPaths.some(p => pathname === p || (p !== '/dashboard' && pathname.startsWith(p)))
+            : pathname === item.path || (item.path !== '/dashboard' && pathname.startsWith(item.path));
           return (
             <Link key={item.path} href={item.path}
               className={cn(

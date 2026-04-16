@@ -6,20 +6,30 @@ import { UserButton } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { name: 'Dashboard',   path: '/dashboard' },
-  { name: 'Deadlines',   path: '/deadlines' },
-  { name: 'Essays',      path: '/essays' },
-  { name: 'Discover',    path: '/discover/search' },
-  { name: 'Activities',  path: '/activities' },
-  { name: 'Circle',      path: '/circle' },
-  { name: 'Parent',      path: '/invite' },
+  { name: 'Dashboard',  path: '/dashboard' },
+  { name: 'Deadlines',  path: '/deadlines' },
+  { name: 'Essays',     path: '/essays' },
+  { name: 'Discover',   path: '/discover/search' },
+  { name: 'Circle',     path: '/circle' },
+  { name: 'More',       path: '/more' },
+];
+
+// Pages that belong to "More" for active-state highlighting
+const MORE_PATHS = [
+  '/more', '/activities', '/recommendations', '/decisions',
+  '/document-checklist', '/test-scores', '/interviews',
+  '/scholarships', '/profile', '/suggest', '/settings', '/invite',
 ];
 
 export default function TopNav() {
   const pathname = usePathname();
 
-  const isActive = (path: string) =>
-    pathname === path || (path !== '/dashboard' && pathname.startsWith(path));
+  const isActive = (path: string) => {
+    if (path === '/more') {
+      return MORE_PATHS.some(p => pathname === p || (p !== '/more' && pathname.startsWith(p)));
+    }
+    return pathname === path || (path !== '/dashboard' && pathname.startsWith(path));
+  };
 
   return (
     <nav className="frosted-nav fixed top-0 left-0 right-0 z-50 h-[52px] flex items-center justify-center">
