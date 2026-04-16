@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
+import TopNav from '@/components/TopNav';
 import MobileNav from '@/components/MobileNav';
 
 export default function InvitePage() {
@@ -39,7 +40,8 @@ export default function InvitePage() {
   if (success) {
     return (
       <>
-        <main className="min-h-screen bg-white flex flex-col items-center justify-center px-4 pb-24">
+        <TopNav />
+        <main className="min-h-screen bg-white flex flex-col items-center justify-center px-4 pb-24 pt-[52px]">
           <div className="max-w-container w-full text-center">
             <div className="text-6xl mb-6">🎉</div>
             <h1 className="text-3xl font-extrabold text-navy mb-3">Invite sent!</h1>
@@ -66,7 +68,8 @@ export default function InvitePage() {
 
   return (
     <>
-      <main className="min-h-screen bg-white pb-24">
+      <TopNav />
+      <main className="min-h-screen bg-white pb-24 pt-[52px]">
         <div className="max-w-container mx-auto px-4 py-8">
           <Link
             href="/dashboard"
