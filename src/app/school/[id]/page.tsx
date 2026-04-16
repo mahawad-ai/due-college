@@ -8,7 +8,24 @@ import TopNav from '@/components/TopNav';
 import MobileNav from '@/components/MobileNav';
 import DeadlineTable from '@/components/DeadlineTable';
 import CollegeLogo from '@/components/CollegeLogo';
-import { College, Deadline, CustomDeadline, ChecklistItem, AppStatus } from '@/lib/types';
+import { Deadline, CustomDeadline, ChecklistItem, AppStatus } from '@/lib/types';
+
+interface CollegeWithStats {
+  id: string;
+  name: string;
+  city: string | null;
+  state: string | null;
+  website: string | null;
+  common_app: boolean;
+  acceptance_rate: number | null;
+  avg_gpa: number | null;
+  sat_25: number | null;
+  sat_75: number | null;
+  act_25: number | null;
+  act_75: number | null;
+  tuition_out_state: number | null;
+  enrollment: number | null;
+}
 import { getDaysRemaining, cn } from '@/lib/utils';
 
 const APP_STATUS_CONFIG: Record<AppStatus, { label: string; color: string }> = {
@@ -26,7 +43,7 @@ export default function SchoolDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { isSignedIn } = useAuth();
   const router = useRouter();
-  const [college, setCollege] = useState<College | null>(null);
+  const [college, setCollege] = useState<CollegeWithStats | null>(null);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [customDeadlines, setCustomDeadlines] = useState<CustomDeadline[]>([]);
   const [submittedIds, setSubmittedIds] = useState<Set<string>>(new Set());
@@ -219,6 +236,35 @@ export default function SchoolDetailPage() {
               {college.website && <a href={college.website} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline font-medium">Visit website →</a>}
               {college.common_app && <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">Common App</span>}
             </div>
+            {/* Stats strip */}
+            {(college.acceptance_rate || college.sat_25 || college.act_25 || college.enrollment) && (
+              <div className="grid grid-cols-2 gap-2 mt-4 sm:grid-cols-4">
+                {college.acceptance_rate != null && (
+                  <div className="bg-white rounded-[14px] p-3 text-center">
+                    <p className="text-[18px] font-[800] text-[#1d1d1f]">{college.acceptance_rate}%</p>
+                    <p className="text-[11px] text-[#86868b] font-[500]">Acceptance</p>
+                  </div>
+                )}
+                {college.sat_25 && college.sat_75 && (
+                  <div className="bg-white rounded-[14px] p-3 text-center">
+                    <p className="text-[18px] font-[800] text-[#1d1d1f]">{college.sat_25}–{college.sat_75}</p>
+                    <p className="text-[11px] text-[#86868b] font-[500]">SAT range</p>
+                  </div>
+                )}
+                {college.act_25 && college.act_75 && (
+                  <div className="bg-white rounded-[14px] p-3 text-center">
+                    <p className="text-[18px] font-[800] text-[#1d1d1f]">{college.act_25}–{college.act_75}</p>
+                    <p className="text-[11px] text-[#86868b] font-[500]">ACT range</p>
+                  </div>
+                )}
+                {college.enrollment != null && (
+                  <div className="bg-white rounded-[14px] p-3 text-center">
+                    <p className="text-[18px] font-[800] text-[#1d1d1f]">{college.enrollment.toLocaleString()}</p>
+                    <p className="text-[11px] text-[#86868b] font-[500]">Undergrad</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Application Status */}

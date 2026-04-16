@@ -68,7 +68,7 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="max-w-[680px] mx-auto px-6 pt-20 pb-16 text-center">
-        <p className="text-[12px] font-[600] text-[#ff3b30] tracking-[0.8px] uppercase mb-5">Free for students</p>
+        <p className="text-[12px] font-[600] text-[#ff3b30] tracking-[0.8px] uppercase mb-5">243 colleges · Free for every student</p>
         <h1 className="text-[52px] sm:text-[64px] font-[800] tracking-[-3px] leading-[1.02] text-[#1d1d1f] mb-5">
           Never miss a<br/>
           <span className="text-[#ff3b30]">college deadline.</span>
@@ -106,6 +106,27 @@ export default function HomePage() {
       {/* Divider */}
       <div className="border-t border-[#e8e8ed] max-w-[860px] mx-auto" />
 
+      {/* How it works */}
+      <section className="max-w-[860px] mx-auto px-6 py-20">
+        <h2 className="text-[32px] sm:text-[38px] font-[800] tracking-[-1.5px] text-[#1d1d1f] text-center mb-12">Three steps to peace of mind</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
+          {[
+            { step: '1', title: 'Add your schools', desc: 'Search and select all the colleges you\'re applying to in seconds.' },
+            { step: '2', title: 'We load your deadlines', desc: 'Every ED, EA, RD, FAFSA, and scholarship date — pulled in automatically.' },
+            { step: '3', title: 'Get reminders before every one', desc: 'We\'ll remind you before deadlines hit so you\'re never caught off guard.' },
+          ].map((s) => (
+            <div key={s.step} className="text-center">
+              <div className="w-10 h-10 rounded-full bg-[#ff3b30] text-white text-[16px] font-[800] flex items-center justify-center mx-auto mb-4">{s.step}</div>
+              <h3 className="text-[16px] font-[700] text-[#1d1d1f] mb-2">{s.title}</h3>
+              <p className="text-[14px] text-[#86868b] leading-[1.55]">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Divider */}
+      <div className="border-t border-[#e8e8ed] max-w-[860px] mx-auto" />
+
       {/* Features */}
       <section className="max-w-[860px] mx-auto px-6 py-20">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-12">
@@ -113,6 +134,9 @@ export default function HomePage() {
             { icon: '📅', title: 'Every deadline, organized', desc: 'ED1, EA, RD, FAFSA, and more — automatically tracked and color-coded by urgency.' },
             { icon: '✍️', title: 'Essays & recommendations', desc: 'Track word counts, deadlines, and recommender status across every school.' },
             { icon: '👥', title: 'Your Circle', desc: 'Go through it with friends. Cheer each other on, share milestones, and stay accountable.' },
+            { icon: '👪', title: 'Keep parents in the loop', desc: 'Share a read-only link so your parents always know where things stand — no nagging required.' },
+            { icon: '✨', title: 'AI college suggestions', desc: 'Get a personalized Reach / Match / Safety list based on your GPA, test scores, and preferences.' },
+            { icon: '💰', title: 'Scholarships & interviews', desc: 'Track every scholarship deadline and interview — all in the same place as your applications.' },
           ].map((f) => (
             <div key={f.title} className="text-center">
               <div className="text-[36px] mb-4">{f.icon}</div>
@@ -138,9 +162,13 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-[#e8e8ed] py-10 text-center text-[13px] text-[#86868b]">
         <p className="mb-1">due.college · Free for students · No spam</p>
-        <a href="mailto:hello@due.college" className="text-[#86868b] hover:text-[#1d1d1f] transition-colors no-underline">
-          hello@due.college
-        </a>
+        <div className="flex items-center justify-center gap-4 mt-1">
+          <Link href="/privacy" className="text-[#86868b] hover:text-[#1d1d1f] transition-colors no-underline">Privacy</Link>
+          <span className="text-[#e8e8ed]">·</span>
+          <a href="mailto:hello@due.college" className="text-[#86868b] hover:text-[#1d1d1f] transition-colors no-underline">
+            Contact (hello@due.college)
+          </a>
+        </div>
       </footer>
     </main>
   );
