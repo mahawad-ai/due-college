@@ -4,7 +4,8 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { Resend } from 'resend';
 import { renderCircleInviteEmail } from '@/emails/circle-invite';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-init so build-time page collection doesn't crash on missing env var
+const getResend = () => new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
 /**
  * POST /api/circle/invite-email
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
   });
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: 'due.college <noreply@due.college>',
       to: email.trim(),
       subject: `${senderName} invited you to their Circle on due.college`,

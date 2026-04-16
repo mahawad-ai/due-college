@@ -3,7 +3,8 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { Resend } from 'resend';
 import { renderNudgeEmail } from '@/emails/parent-nudge';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-init so build-time page collection doesn't crash on missing env var
+const getResend = () => new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
 const NUDGE_MESSAGES = [
   "Hey, just checking in — how's the application going? 💪",
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   });
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: 'due.college <reminders@due.college>',
       to: student.email,
       subject: `${connection.parent_name} sent you a nudge 💬`,
