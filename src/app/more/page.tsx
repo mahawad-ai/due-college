@@ -38,7 +38,6 @@ const SECTIONS = [
     title: 'Account',
     items: [
       { href: '/settings', emoji: '⚙️', label: 'Settings', desc: 'Notifications, profile, plan' },
-      { href: '/upgrade', emoji: '⚡', label: 'Upgrade', desc: 'Plus & Family plans' },
       { href: '/invite', emoji: '👪', label: 'Invite Parent', desc: 'Share read-only view' },
     ],
   },

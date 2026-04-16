@@ -184,7 +184,6 @@ export default function InvitePage() {
 
           <p className="text-xs text-gray-400 text-center mt-4">
             Your parent will only be able to view your deadlines, not edit them.
-            SMS reminders require a Family plan subscription.
           </p>
         </div>
       </main>

@@ -57,12 +57,6 @@ export default function SettingsPage() {
     });
   }
 
-  const tierLabels: Record<string, string> = {
-    free: 'Free',
-    plus: 'Plus ($4.99/mo)',
-    family: 'Family ($7.99/mo)',
-  };
-
   return (
     <>
       <TopNav />
@@ -136,19 +130,9 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-[#1d1d1f] text-sm">SMS reminders</p>
-                    <p className="text-xs text-[#86868b]">
-                      {profile?.subscription_tier === 'free'
-                        ? 'Requires Plus or Family plan'
-                        : 'Requires phone number'}
-                    </p>
+                    <p className="text-xs text-[#86868b]">Coming soon</p>
                   </div>
-                  <button
-                    onClick={() => updatePref('sms_enabled', !prefs.sms_enabled)}
-                    disabled={profile?.subscription_tier === 'free'}
-                    className={`w-11 h-6 rounded-full transition-colors ${
-                      prefs.sms_enabled ? 'bg-[#34c759]' : 'bg-[#e8e8ed]'
-                    } ${profile?.subscription_tier === 'free' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
+                  <div className="w-11 h-6 bg-[#e8e8ed] rounded-full opacity-50 cursor-not-allowed" />
                 </div>
 
                 <hr className="border-[#e8e8ed]" />
@@ -177,22 +161,6 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
-
-          {/* Subscription */}
-          <div className="bg-[#f5f5f7] rounded-2xl p-6 mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-[800] text-[#1d1d1f]">Subscription</h2>
-              <span className="text-sm font-semibold text-[#ff3b30] bg-[#ff3b30]/10 px-3 py-1 rounded-full">
-                {tierLabels[profile?.subscription_tier || 'free']}
-              </span>
-            </div>
-            <Link
-              href="/upgrade"
-              className="block w-full text-center py-3 border border-[#d2d2d7] text-[#1d1d1f] font-[600] rounded-xl hover:bg-[#e8e8ed] transition-colors text-sm"
-            >
-              {profile?.subscription_tier === 'free' ? 'Upgrade plan' : 'Manage subscription'}
-            </Link>
-          </div>
 
           {/* Danger Zone */}
           <div className="bg-[#f5f5f7] rounded-2xl border border-[#ff3b30]/20 p-6">

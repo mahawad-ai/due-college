@@ -36,7 +36,6 @@ export default function SchoolDetailPage() {
   const [collegeNotes, setCollegeNotes] = useState('');
   const [editingNotes, setEditingNotes] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [subscription, setSubscription] = useState<string>('free');
 
   useEffect(() => {
     async function load() {
@@ -71,7 +70,6 @@ export default function SchoolDetailPage() {
             if (s.user_notes) notesMap.set(s.deadline_id, s.user_notes);
           }
           setDeadlineNotes(notesMap);
-          setSubscription(profile.subscription_tier || 'free');
           setChecklist(checklistData.items || []);
 
           const collegeEntry = (collegeStatusData.colleges || []).find((c: { college_id: string }) => c.college_id === id);
