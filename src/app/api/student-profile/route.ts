@@ -23,79 +23,59 @@ export async function GET() {
 }
 
 // POST /api/student-profile — create or update profile
+// Matches the schema in migration 005 and the field names the /profile page sends.
 export async function POST(req: NextRequest) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
   const {
-    sat_score,
-    act_score,
-    gpa_weighted,
-    gpa_unweighted,
-    intended_majors,
-    location_preference,
-    budget_constraint,
-    size_preference,
+    gpa,
+    gpa_scale,
+    weighted_gpa,
+    class_rank,
+    class_size,
+    graduation_year,
+    intended_major,
+    intended_major_2,
+    best_sat,
+    best_act,
+    preferred_regions,
+    preferred_settings,
+    preferred_size,
   } = body;
+
+  const payload = {
+    user_id: user.id,
+    gpa,
+    gpa_scale,
+    weighted_gpa,
+    class_rank,
+    class_size,
+    graduation_year,
+    intended_major,
+    intended_major_2,
+    best_sat,
+    best_act,
+    preferred_regions,
+    preferred_settings,
+    preferred_size,
+    updated_at: new Date().toISOString(),
+  };
 
   const supabase = createServerSupabaseClient();
 
-  // Check if profile exists
-  const { data: existing } = await supabase
+  // Upsert on user_id (student_profiles has UNIQUE constraint there per migration 005)
+  const { data, error } = await supabase
     .from('student_profiles')
-    .select('id')
-    .eq('user_id', user.id)
+    .upsert(payload, { onConflict: 'user_id' })
+    .select()
     .single();
 
-  if (existing) {
-    // Update
-    const { data, error } = await supabase
-      .from('student_profiles')
-      .update({
-        sat_score,
-        act_score,
-        gpa_weighted,
-        gpa_unweighted,
-        intended_majors,
-        location_preference,
-        budget_constraint,
-        size_preference,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', user.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Profile update error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ profile: data });
-  } else {
-    // Create
-    const { data, error } = await supabase
-      .from('student_profiles')
-      .insert({
-        user_id: user.id,
-        sat_score,
-        act_score,
-        gpa_weighted,
-        gpa_unweighted,
-        intended_majors,
-        location_preference,
-        budget_constraint,
-        size_preference,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Profile insert error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ profile: data });
+  if (error) {
+    console.error('Profile upsert error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  return NextResponse.json({ profile: data });
 }

@@ -32,6 +32,7 @@ export default function ProfilePage() {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export default function ProfilePage() {
 
   async function handleSave() {
     setSaving(true);
+    setSaveError(null);
     const payload = {
       gpa: form.gpa ? parseFloat(form.gpa) : null,
       gpa_scale: form.gpa_scale ? parseFloat(form.gpa_scale) : 4.0,
@@ -84,10 +86,23 @@ export default function ProfilePage() {
       preferred_settings: form.preferred_settings.length ? form.preferred_settings : null,
       preferred_size: form.preferred_size !== 'any' ? form.preferred_size : null,
     };
-    await fetch('/api/student-profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      const res = await fetch('/api/student-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Failed to save (${res.status})`);
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e: unknown) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save profile');
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (!isLoaded || loading) return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#1d1d1f] border-t-transparent rounded-full animate-spin" /></div>;
@@ -220,6 +235,12 @@ export default function ProfilePage() {
           <button onClick={handleSave} disabled={saving} className="w-full mt-5 py-4 rounded-2xl bg-[#ff3b30] text-white font-[800] text-base hover:opacity-85 disabled:opacity-50 transition-opacity">
             {saving ? 'Saving...' : saved ? '✓ Saved!' : 'Save Profile'}
           </button>
+
+          {saveError && (
+            <div className="mt-3 bg-[#fff5f5] border border-[#ffe0db] rounded-xl p-3 text-[13px] text-[#ff3b30]">
+              {saveError}
+            </div>
+          )}
 
           <div className="flex gap-3 mt-3">
             <Link href="/explore" className="flex-1 text-center py-3 rounded-xl bg-[#1d1d1f] text-white font-[600] text-sm hover:opacity-85">Explore Colleges →</Link>
