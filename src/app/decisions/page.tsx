@@ -104,9 +104,9 @@ export default function DecisionsPage() {
           {colleges.length === 0 && (
             <div className="text-center py-16">
               <div className="text-5xl mb-4">🏆</div>
-              <h2 className="text-xl font-[800] text-[#1d1d1f] mb-2">Decision Board</h2>
-              <p className="text-[#86868b] mb-4">Add schools to your dashboard first, then track decisions here.</p>
-              <Link href="/" className="inline-flex items-center gap-2 bg-[#ff3b30] text-white font-[600] px-6 py-3 rounded-xl hover:opacity-85">Add Schools</Link>
+              <h2 className="text-xl font-[800] text-[#1d1d1f] mb-2">No schools yet</h2>
+              <p className="text-[#86868b] mb-6">Add schools to your list first — decisions will appear here as you hear back.</p>
+              <Link href="/explore" className="inline-flex items-center gap-2 bg-[#ff3b30] text-white font-[600] px-6 py-3 rounded-xl hover:opacity-85">Explore Colleges →</Link>
             </div>
           )}
 

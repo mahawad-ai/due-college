@@ -342,13 +342,18 @@ export default function DashboardPage() {
 
           {/* ── Empty state ── */}
           {deadlines.length === 0 && !loading && (
-            <div className="text-center py-20">
-              <div className="text-5xl mb-5">🎓</div>
-              <h2 className="text-[22px] font-[700] text-[#1d1d1f] mb-2 tracking-tight">No schools added yet</h2>
-              <p className="text-[#86868b] mb-8">Add your colleges to see all your deadlines</p>
-              <Link href="/" className="inline-flex items-center gap-2 bg-[#ff3b30] text-white font-[600] px-6 py-3 rounded-xl hover:opacity-85 transition-opacity">
-                Add Schools →
+            <div className="text-center py-16">
+              <div className="text-6xl mb-5">🎓</div>
+              <h2 className="text-[24px] font-[800] text-[#1d1d1f] mb-2 tracking-tight">Add your first school</h2>
+              <p className="text-[15px] text-[#86868b] mb-8 max-w-[280px] mx-auto">Search for colleges and we&apos;ll load all their deadlines automatically.</p>
+              <Link href="/explore" className="inline-flex items-center gap-2 bg-[#ff3b30] text-white font-[700] px-7 py-3.5 rounded-xl hover:opacity-85 transition-opacity text-[15px]">
+                Explore Colleges →
               </Link>
+              <p className="text-[13px] text-[#aeaeb2] mt-4">
+                Or use{' '}
+                <Link href="/suggest" className="text-[#ff3b30] font-[600] hover:underline">AI suggestions</Link>
+                {' '}to build your list
+              </p>
             </div>
           )}
 

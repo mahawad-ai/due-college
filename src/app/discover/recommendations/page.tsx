@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import TopNav from '@/components/TopNav';
+import MobileNav from '@/components/MobileNav';
 import CollegeLogo from '@/components/CollegeLogo';
 
 type CollegeRec = {
@@ -212,6 +213,7 @@ export default function RecommendationsPage() {
           )}
         </div>
       </main>
+      <MobileNav />
     </>
   );
 }

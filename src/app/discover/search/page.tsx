@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import TopNav from '@/components/TopNav';
+import MobileNav from '@/components/MobileNav';
 import CollegeLogo from '@/components/CollegeLogo';
 
 interface College {
@@ -204,6 +205,7 @@ export default function CollegeSearchPage() {
           )}
         </div>
       </main>
+      <MobileNav />
     </>
   );
 }

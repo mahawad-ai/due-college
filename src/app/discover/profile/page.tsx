@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import TopNav from '@/components/TopNav';
+import MobileNav from '@/components/MobileNav';
 
 const inputClass =
   'w-full border border-[#d2d2d7] rounded-xl px-4 py-2.5 text-[14px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:border-[#ff3b30] transition-colors bg-white';
@@ -282,6 +283,7 @@ export default function StudentProfilePage() {
           </form>
         </div>
       </main>
+      <MobileNav />
     </>
   );
 }
