@@ -277,6 +277,7 @@ export interface CircleData {
   activities: CircleActivity[];
   challenges: CircleChallenge[];
   invite_url: string;
+  user_handle: string | null;
 }
 // ──────────────────────────────────────────────────────────────
 

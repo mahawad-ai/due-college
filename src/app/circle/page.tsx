@@ -182,6 +182,13 @@ export default function CirclePage() {
   const [joiningChallenge, setJoiningChallenge] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [togglingReaction, setTogglingReaction] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [sendingInvite, setSendingInvite] = useState(false);
+  const [inviteSent, setInviteSent] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [handleInput, setHandleInput] = useState('');
+  const [claimingHandle, setClaimingHandle] = useState(false);
+  const [handleError, setHandleError] = useState<string | null>(null);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
@@ -357,6 +364,59 @@ export default function CirclePage() {
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // fallback — nothing to do
+    }
+  }
+
+  // Send email invite
+  async function handleSendInvite() {
+    if (!inviteEmail.trim() || sendingInvite) return;
+    setSendingInvite(true);
+    setInviteError(null);
+    setInviteSent(false);
+    try {
+      const res = await fetch('/api/circle/invite-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail.trim() }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setInviteError(body.error || 'Failed to send invite.');
+        return;
+      }
+      setInviteSent(true);
+      setInviteEmail('');
+      setTimeout(() => setInviteSent(false), 3000);
+    } catch {
+      setInviteError('Network error. Please try again.');
+    } finally {
+      setSendingInvite(false);
+    }
+  }
+
+  // Claim a handle
+  async function handleClaimHandle() {
+    if (!handleInput.trim() || claimingHandle) return;
+    setClaimingHandle(true);
+    setHandleError(null);
+    try {
+      const res = await fetch('/api/username/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ handle: handleInput.trim() }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setHandleError(body.error || 'Failed to claim handle.');
+        return;
+      }
+      // Refresh circle data to pick up the new handle-based URL
+      setHandleInput('');
+      await fetchCircle();
+    } catch {
+      setHandleError('Network error. Please try again.');
+    } finally {
+      setClaimingHandle(false);
     }
   }
 
@@ -719,6 +779,47 @@ export default function CirclePage() {
                 <h2 className="text-[13px] font-[600] text-[#6e6e73] uppercase tracking-[0.05em] mb-3">
                   Invite Friends
                 </h2>
+
+                {/* Handle claim banner — only if user has no handle yet */}
+                {!data.user_handle && (
+                  <div className="bg-gradient-to-r from-[#fff5f5] to-[#fff8f0] border border-[#ffe0db] rounded-[18px] p-5 mb-4">
+                    <p className="text-[14px] font-[700] text-[#1d1d1f] mb-1">
+                      Claim your personal invite link
+                    </p>
+                    <p className="text-[13px] text-[#86868b] mb-3">
+                      Get a short link like <span className="font-mono font-[600] text-[#ff3b30]">due.college/sarah</span> to share with friends.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0 flex items-center bg-white border border-[#e8e8ed] rounded-[12px] px-3 py-2.5">
+                        <span className="text-[13px] text-[#aeaeb2] font-mono flex-shrink-0">due.college/</span>
+                        <input
+                          type="text"
+                          value={handleInput}
+                          onChange={(e) => {
+                            setHandleInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''));
+                            setHandleError(null);
+                          }}
+                          onKeyDown={(e) => e.key === 'Enter' && handleClaimHandle()}
+                          placeholder="yourname"
+                          maxLength={20}
+                          className="flex-1 min-w-0 text-[13px] text-[#1d1d1f] font-mono bg-transparent outline-none placeholder:text-[#d1d1d6]"
+                        />
+                      </div>
+                      <button
+                        onClick={handleClaimHandle}
+                        disabled={claimingHandle || !handleInput.trim()}
+                        className="flex-shrink-0 px-4 py-2.5 rounded-[12px] text-[13px] font-[700] bg-[#ff3b30] text-white transition-all duration-200 hover:opacity-90 active:scale-[0.97] disabled:opacity-40"
+                      >
+                        {claimingHandle ? 'Claiming…' : 'Claim'}
+                      </button>
+                    </div>
+                    {handleError && (
+                      <p className="text-[12px] text-[#ff3b30] mt-2">{handleError}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Share link */}
                 <div className="bg-[#f5f5f7] rounded-[18px] p-5">
                   <p className="text-[14px] text-[#1d1d1f] mb-3 leading-snug">
                     Share your invite link and build your accountability circle.
@@ -740,6 +841,40 @@ export default function CirclePage() {
                     >
                       {copied ? 'Copied!' : 'Copy'}
                     </button>
+                  </div>
+
+                  {/* Email invite */}
+                  <div className="mt-4 pt-4 border-t border-[#e8e8ed]">
+                    <p className="text-[13px] text-[#86868b] mb-2">Or invite by email</p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="email"
+                        value={inviteEmail}
+                        onChange={(e) => {
+                          setInviteEmail(e.target.value);
+                          setInviteError(null);
+                          setInviteSent(false);
+                        }}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSendInvite()}
+                        placeholder="friend@school.edu"
+                        className="flex-1 min-w-0 bg-white border border-[#e8e8ed] rounded-[12px] px-3 py-2.5 text-[13px] text-[#1d1d1f] outline-none focus:border-[#ff3b30] transition-colors placeholder:text-[#d1d1d6]"
+                      />
+                      <button
+                        onClick={handleSendInvite}
+                        disabled={sendingInvite || !inviteEmail.trim()}
+                        className={cn(
+                          'flex-shrink-0 px-4 py-2.5 rounded-[12px] text-[13px] font-[700] transition-all duration-200',
+                          inviteSent
+                            ? 'bg-[#34c759] text-white'
+                            : 'bg-[#1d1d1f] text-white hover:opacity-90 active:scale-[0.97] disabled:opacity-40'
+                        )}
+                      >
+                        {sendingInvite ? 'Sending…' : inviteSent ? 'Sent!' : 'Send'}
+                      </button>
+                    </div>
+                    {inviteError && (
+                      <p className="text-[12px] text-[#ff3b30] mt-2">{inviteError}</p>
+                    )}
                   </div>
                 </div>
               </section>

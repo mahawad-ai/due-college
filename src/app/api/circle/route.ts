@@ -65,6 +65,17 @@ export async function GET() {
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://due.college';
 
+  // Prefer handle-based invite URL if the user has claimed a handle
+  const { data: handleRow } = await supabase
+    .from('user_handles')
+    .select('handle')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  const inviteUrl = handleRow?.handle
+    ? `${baseUrl}/${handleRow.handle}`
+    : `${baseUrl}/circle/join/${circle?.invite_code}`;
+
   return NextResponse.json({
     circle,
     members: members || [],
@@ -81,7 +92,8 @@ export async function GET() {
       user_completed: (c.circle_challenge_members || []).some((m: { user_id: string; completed_at: string | null }) => m.user_id === user.id && m.completed_at),
       circle_challenge_members: undefined,
     })),
-    invite_url: `${baseUrl}/circle/join/${circle?.invite_code}`,
+    invite_url: inviteUrl,
+    user_handle: handleRow?.handle ?? null,
   });
 }
 
