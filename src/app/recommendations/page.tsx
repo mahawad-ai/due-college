@@ -93,7 +93,7 @@ export default function RecommendationsPage() {
 
           {/* Pipeline view */}
           {recs.length > 0 && (
-            <div className="grid grid-cols-4 gap-2 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
               {(['not_asked', 'asked', 'confirmed', 'submitted'] as RecStatus[]).map(s => {
                 const count = recs.filter(r => r.status === s).length;
                 const cfg = STATUS_CONFIG[s];

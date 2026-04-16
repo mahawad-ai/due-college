@@ -82,7 +82,7 @@ export default function EssayEditorPage() {
   const cfg = STATUS_CONFIG[status];
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white pt-[52px] pb-28">
       {/* Sticky header */}
       <div className="sticky top-0 z-10 bg-white border-b border-[#e8e8ed]">
         <div className="max-w-2xl mx-auto px-4 py-3">

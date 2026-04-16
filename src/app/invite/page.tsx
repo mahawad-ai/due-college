@@ -47,7 +47,7 @@ export default function InvitePage() {
     return (
       <>
         <TopNav />
-        <main className="min-h-screen bg-white flex flex-col items-center justify-center px-4 pb-24 pt-[52px]">
+        <main className="min-h-screen bg-white flex flex-col items-center justify-center px-4 pb-28 pt-[52px]">
           <div className="max-w-container w-full">
             <div className="text-center mb-6">
               <div className="text-6xl mb-4">{emailSent ? '🎉' : '⚠️'}</div>
@@ -110,7 +110,7 @@ export default function InvitePage() {
   return (
     <>
       <TopNav />
-      <main className="min-h-screen bg-white pb-24 pt-[52px]">
+      <main className="min-h-screen bg-white pb-28 pt-[52px]">
         <div className="max-w-container mx-auto px-4 py-8">
           <Link
             href="/dashboard"

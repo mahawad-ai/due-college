@@ -86,7 +86,7 @@ export default function DecisionsPage() {
 
           {/* Stats */}
           {colleges.length > 0 && (
-            <div className="grid grid-cols-4 gap-2 mb-5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
               {[
                 { label: 'Applied', value: stats.applied, color: 'text-blue-700' },
                 { label: 'Accepted', value: stats.accepted, color: 'text-[#34c759]' },
