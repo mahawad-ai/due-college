@@ -669,11 +669,24 @@ export default function CirclePage() {
                             </div>
                           </div>
 
-                          <div className="mt-4">
+                          <div className="mt-4 flex items-center gap-2">
                             {challenge.user_joined ? (
-                              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/10 text-white text-[13px] font-[600]">
-                                <span>&#10003;</span> Joined
-                              </span>
+                              <>
+                                <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#34c759]/15 text-[#34c759] text-[13px] font-[700]">
+                                  <span>&#10003;</span> Joined
+                                </span>
+                                <button
+                                  onClick={() => handleJoinChallenge(challenge.id)}
+                                  disabled={joiningChallenge === challenge.id}
+                                  className={cn(
+                                    'px-4 py-2 rounded-full border border-white/20 text-white/80 text-[13px] font-[600] transition-all duration-200',
+                                    'hover:bg-white/10 hover:text-white active:scale-[0.97]',
+                                    joiningChallenge === challenge.id && 'opacity-60 cursor-not-allowed'
+                                  )}
+                                >
+                                  {joiningChallenge === challenge.id ? 'Leaving…' : 'Leave'}
+                                </button>
+                              </>
                             ) : (
                               <button
                                 onClick={() => handleJoinChallenge(challenge.id)}
