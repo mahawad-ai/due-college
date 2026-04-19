@@ -141,9 +141,26 @@ ${collegeContext}
 
 Select 12–15 schools from this list that are the best fit. Distribute: 3–4 reaches, 5–6 targets, 3–4 likelies. Choose the ED pick from the target/reach group where ED gives the most strategic advantage.`;
 
+  // Pick the best available model on this account
+  let model = 'claude-haiku-4-5';
+  try {
+    const modelList = await anthropic.models.list();
+    const ids = modelList.data.map((m: any) => m.id);
+    const preferred = [
+      'claude-sonnet-4-5',
+      'claude-haiku-4-5',
+      'claude-3-7-sonnet-20250219',
+      'claude-3-5-sonnet-20241022',
+      'claude-3-5-haiku-20241022',
+    ];
+    model = preferred.find((m) => ids.includes(m)) ?? ids[0] ?? model;
+  } catch {
+    // fall through to default
+  }
+
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model,
       max_tokens: 2800,
       system: systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
