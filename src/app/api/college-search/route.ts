@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   const satMin = searchParams.get('sat_min') ? parseInt(searchParams.get('sat_min')!) : null;
   const satMax = searchParams.get('sat_max') ? parseInt(searchParams.get('sat_max')!) : null;
   const acceptanceRateMax = searchParams.get('acceptance_rate_max')
-    ? parseInt(searchParams.get('acceptance_rate_max')!) / 100
+    ? parseInt(searchParams.get('acceptance_rate_max')!)
     : null;
   const size = searchParams.get('size');
   const location = searchParams.get('location');

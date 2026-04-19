@@ -1,0 +1,666 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import TopNav from '@/components/TopNav';
+import MobileNav from '@/components/MobileNav';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type CollegeResult = {
+  name: string;
+  location: string;
+  match: 'reach' | 'target' | 'likely';
+  chance: number;
+  why: string;
+};
+
+type Strategy = {
+  headline: string;
+  colleges: CollegeResult[];
+  ed_pick: { school: string; match: string; reasoning: string };
+  financial: { summary: string; highlights: string[] };
+  essay: { angle: string; avoid: string };
+  timeline: { when: string; action: string }[];
+};
+
+type Phase = 'questions' | 'generating' | 'results';
+
+const INCOME_OPTIONS = [
+  { value: 'under_50k', label: 'Under $50k' },
+  { value: '50_100k', label: '$50k – $100k' },
+  { value: '100_150k', label: '$100k – $150k' },
+  { value: 'over_150k', label: '$150k+' },
+  { value: 'prefer_not', label: 'Prefer not to say' },
+];
+
+const DISTANCE_OPTIONS = [
+  { value: 'close', label: '🏠 Stay close (< 3 hrs)' },
+  { value: 'moderate', label: '✈️ Open to travel (< 8 hrs)' },
+  { value: 'anywhere', label: '🌍 Anywhere' },
+];
+
+const LOADING_STEPS = [
+  'Reading your profile…',
+  'Scanning 250+ colleges…',
+  'Calculating your chances…',
+  'Mapping your financial aid…',
+  'Writing your strategy…',
+];
+
+const matchColors = {
+  reach: {
+    bg: 'bg-red-50',
+    border: 'border-red-200',
+    badge: 'bg-red-100 text-red-700',
+    bar: 'bg-red-400',
+  },
+  target: {
+    bg: 'bg-yellow-50',
+    border: 'border-yellow-200',
+    badge: 'bg-yellow-100 text-yellow-700',
+    bar: 'bg-yellow-400',
+  },
+  likely: {
+    bg: 'bg-green-50',
+    border: 'border-green-200',
+    badge: 'bg-green-100 text-green-700',
+    bar: 'bg-green-400',
+  },
+};
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function PillOption({
+  selected,
+  onClick,
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-5 py-3 rounded-2xl border-2 text-[15px] font-[600] transition-all duration-200 ${
+        selected
+          ? 'bg-[#1d1d1f] border-[#1d1d1f] text-white scale-[1.03]'
+          : 'bg-white border-[#e8e8ed] text-[#1d1d1f] hover:border-[#1d1d1f]'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function CollegeCard({ college, index }: { college: CollegeResult; index: number }) {
+  const colors = matchColors[college.match];
+  return (
+    <div
+      className={`rounded-2xl border ${colors.bg} ${colors.border} p-4 transition-all duration-300`}
+      style={{ animationDelay: `${index * 60}ms` }}
+    >
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div>
+          <div className="font-[700] text-[#1d1d1f] text-[15px]">{college.name}</div>
+          <div className="text-[12px] text-[#86868b] mt-0.5">{college.location}</div>
+        </div>
+        <span
+          className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-[800] uppercase tracking-wide ${colors.badge}`}
+        >
+          {college.match}
+        </span>
+      </div>
+      <div className="mb-2">
+        <div className="flex justify-between text-[12px] text-[#86868b] mb-1">
+          <span>Your estimated chance</span>
+          <span className="font-[700] text-[#1d1d1f]">{college.chance}%</span>
+        </div>
+        <div className="h-1.5 bg-[#e8e8ed] rounded-full overflow-hidden">
+          <div
+            className={`h-full ${colors.bar} rounded-full transition-all duration-700`}
+            style={{ width: `${college.chance}%` }}
+          />
+        </div>
+      </div>
+      <p className="text-[13px] text-[#424245] leading-relaxed">{college.why}</p>
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+export default function StrategyPage() {
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
+
+  const [phase, setPhase] = useState<Phase>('questions');
+  const [question, setQuestion] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
+  const [strategy, setStrategy] = useState<Strategy | null>(null);
+  const [error, setError] = useState('');
+
+  // Form answers
+  const [gpa, setGpa] = useState('');
+  const [sat, setSat] = useState('');
+  const [act, setAct] = useState('');
+  const [major, setMajor] = useState('');
+  const [income, setIncome] = useState('');
+  const [distance, setDistance] = useState('');
+  const [whatMatters, setWhatMatters] = useState('');
+  const [homeState, setHomeState] = useState('');
+
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+
+  // Pre-fill from existing student profile
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!user) { router.push('/login'); return; }
+    fetch('/api/student-profile')
+      .then((r) => r.json())
+      .then(({ profile }) => {
+        if (!profile) return;
+        if (profile.gpa) setGpa(String(profile.gpa));
+        if (profile.best_sat) setSat(String(profile.best_sat));
+        if (profile.best_act) setAct(String(profile.best_act));
+        if (profile.intended_major) setMajor(profile.intended_major);
+      });
+  }, [isLoaded, user, router]);
+
+  // Auto-focus the active input
+  useEffect(() => {
+    setTimeout(() => inputRef.current?.focus(), 350);
+  }, [question]);
+
+  // Cycle loading messages
+  useEffect(() => {
+    if (phase !== 'generating') return;
+    const iv = setInterval(() => {
+      setLoadingStep((s) => (s + 1) % LOADING_STEPS.length);
+    }, 1400);
+    return () => clearInterval(iv);
+  }, [phase]);
+
+  const questions = [
+    {
+      id: 'gpa',
+      label: "What's your unweighted GPA?",
+      sub: 'On a 4.0 scale. This is one of the most important inputs.',
+      type: 'number' as const,
+      value: gpa,
+      set: setGpa,
+      placeholder: 'e.g. 3.8',
+      canSkip: false,
+    },
+    {
+      id: 'sat',
+      label: "What's your best SAT score?",
+      sub: "If you haven't taken it or prefer ACT, leave blank.",
+      type: 'number' as const,
+      value: sat,
+      set: setSat,
+      placeholder: 'e.g. 1450 (leave blank if N/A)',
+      canSkip: true,
+    },
+    {
+      id: 'act',
+      label: 'Best ACT score?',
+      sub: 'Skip if you only have SAT.',
+      type: 'number' as const,
+      value: act,
+      set: setAct,
+      placeholder: 'e.g. 32 (leave blank if N/A)',
+      canSkip: true,
+    },
+    {
+      id: 'major',
+      label: 'What are you hoping to study?',
+      sub: "Even a broad area is helpful — 'engineering', 'business', 'undecided' all work.",
+      type: 'text' as const,
+      value: major,
+      set: setMajor,
+      placeholder: 'e.g. Computer Science, Pre-med, Undecided',
+      canSkip: true,
+    },
+    {
+      id: 'state',
+      label: 'What state are you from?',
+      sub: "Affects in-state tuition and public university priorities.",
+      type: 'text' as const,
+      value: homeState,
+      set: setHomeState,
+      placeholder: 'e.g. Texas, California, New York',
+      canSkip: true,
+    },
+    {
+      id: 'income',
+      label: "What's your family's approximate income?",
+      sub: 'This helps us show which schools will be most affordable for you. We never store this.',
+      type: 'pills' as const,
+      options: INCOME_OPTIONS,
+      value: income,
+      set: setIncome,
+      canSkip: true,
+    },
+    {
+      id: 'distance',
+      label: 'How far from home are you open to going?',
+      sub: "There's no wrong answer — it's your adventure.",
+      type: 'pills' as const,
+      options: DISTANCE_OPTIONS,
+      value: distance,
+      set: setDistance,
+      canSkip: true,
+    },
+    {
+      id: 'matters',
+      label: 'In one sentence — what matters most to you in a college?',
+      sub: "This is the most important question. Your AI counselor reads this carefully.",
+      type: 'textarea' as const,
+      value: whatMatters,
+      set: setWhatMatters,
+      placeholder: 'e.g. "I want a city school where I can do research and actually get a job in tech after graduation."',
+      canSkip: false,
+    },
+  ];
+
+  const q = questions[question];
+  const progress = ((question) / questions.length) * 100;
+  const isLast = question === questions.length - 1;
+
+  function advance() {
+    if (animating) return;
+    if (isLast) {
+      generate();
+      return;
+    }
+    setAnimating(true);
+    setTimeout(() => {
+      setQuestion((n) => n + 1);
+      setAnimating(false);
+    }, 260);
+  }
+
+  function handleKey(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' && q.type !== 'textarea') advance();
+  }
+
+  async function generate() {
+    setPhase('generating');
+    setError('');
+    try {
+      const res = await fetch('/api/strategy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gpa: gpa ? parseFloat(gpa) : null,
+          sat: sat ? parseInt(sat) : null,
+          act: act ? parseInt(act) : null,
+          intended_major: major || null,
+          income_range: income || null,
+          distance_pref: distance || null,
+          what_matters: whatMatters || null,
+          home_state: homeState || null,
+        }),
+      });
+      const data = await res.json();
+      if (data.error || !data.strategy) {
+        setError(data.error || 'Something went wrong. Please try again.');
+        setPhase('questions');
+        return;
+      }
+      setStrategy(data.strategy);
+      setPhase('results');
+    } catch {
+      setError('Network error — please try again.');
+      setPhase('questions');
+    }
+  }
+
+  // ── Generating screen ──────────────────────────────────────────────────────
+  if (phase === 'generating') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#1d1d1f] text-white px-6">
+        <div className="text-center max-w-sm">
+          {/* Animated orb */}
+          <div className="relative w-24 h-24 mx-auto mb-8">
+            <div className="absolute inset-0 rounded-full bg-[#ff3b30] opacity-20 animate-ping" />
+            <div className="absolute inset-2 rounded-full bg-[#ff3b30] opacity-40 animate-pulse" />
+            <div className="absolute inset-4 rounded-full bg-[#ff3b30] flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347a3.75 3.75 0 01-5.303-5.303 5 5 0 015.303 5.303z" />
+              </svg>
+            </div>
+          </div>
+
+          <h2 className="text-[28px] font-[800] tracking-tight mb-3">
+            Building your strategy
+          </h2>
+          <p
+            className="text-[#aeaeb2] text-[15px] h-6 transition-all duration-500"
+            key={loadingStep}
+          >
+            {LOADING_STEPS[loadingStep]}
+          </p>
+
+          {/* Progress dots */}
+          <div className="flex justify-center gap-2 mt-8">
+            {LOADING_STEPS.map((_, i) => (
+              <div
+                key={i}
+                className={`rounded-full transition-all duration-500 ${
+                  i === loadingStep
+                    ? 'w-6 h-2 bg-[#ff3b30]'
+                    : 'w-2 h-2 bg-[#424245]'
+                }`}
+              />
+            ))}
+          </div>
+
+          <p className="text-[12px] text-[#6e6e73] mt-10">
+            Powered by Claude · Your data is never sold
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Results screen ─────────────────────────────────────────────────────────
+  if (phase === 'results' && strategy) {
+    const reaches = strategy.colleges.filter((c) => c.match === 'reach');
+    const targets = strategy.colleges.filter((c) => c.match === 'target');
+    const likelies = strategy.colleges.filter((c) => c.match === 'likely');
+
+    return (
+      <>
+        <TopNav />
+        <main className="min-h-screen bg-white pt-[90px] pb-28">
+          <div className="max-w-[860px] mx-auto px-6 py-8 page-fade">
+
+            {/* Hero */}
+            <div className="mb-8">
+              <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-2">
+                Your AI College Strategy
+              </p>
+              <h1 className="text-[36px] font-[800] tracking-[-1.5px] text-[#1d1d1f] leading-tight mb-3">
+                {strategy.headline}
+              </h1>
+              <div className="flex flex-wrap gap-3 text-[13px] text-[#86868b]">
+                <span>{reaches.length} reach{reaches.length !== 1 ? 'es' : ''}</span>
+                <span>·</span>
+                <span>{targets.length} targets</span>
+                <span>·</span>
+                <span>{likelies.length} likelies</span>
+                <span>·</span>
+                <span>{strategy.colleges.length} schools total</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+              {/* Left — College list */}
+              <div className="lg:col-span-2 space-y-6">
+
+                {/* ED Pick — highlighted */}
+                <div className="bg-[#1d1d1f] text-white rounded-2xl p-6">
+                  <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-1">
+                    ⚡ Your ED / Early Action Pick
+                  </p>
+                  <div className="text-[22px] font-[800] mb-2">{strategy.ed_pick.school}</div>
+                  <span className={`inline-block px-3 py-1 rounded-full text-[11px] font-[800] uppercase mb-3 ${
+                    strategy.ed_pick.match === 'reach'
+                      ? 'bg-red-900 text-red-300'
+                      : strategy.ed_pick.match === 'target'
+                      ? 'bg-yellow-900 text-yellow-300'
+                      : 'bg-green-900 text-green-300'
+                  }`}>
+                    {strategy.ed_pick.match}
+                  </span>
+                  <p className="text-[14px] text-[#aeaeb2] leading-relaxed">
+                    {strategy.ed_pick.reasoning}
+                  </p>
+                </div>
+
+                {/* Reaches */}
+                {reaches.length > 0 && (
+                  <div>
+                    <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">
+                      Reaches — {reaches.length} school{reaches.length !== 1 ? 's' : ''}
+                    </h2>
+                    <div className="space-y-3">
+                      {reaches.map((c, i) => <CollegeCard key={c.name} college={c} index={i} />)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Targets */}
+                {targets.length > 0 && (
+                  <div>
+                    <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">
+                      Targets — {targets.length} school{targets.length !== 1 ? 's' : ''}
+                    </h2>
+                    <div className="space-y-3">
+                      {targets.map((c, i) => <CollegeCard key={c.name} college={c} index={i} />)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Likelies */}
+                {likelies.length > 0 && (
+                  <div>
+                    <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">
+                      Likelies — {likelies.length} school{likelies.length !== 1 ? 's' : ''}
+                    </h2>
+                    <div className="space-y-3">
+                      {likelies.map((c, i) => <CollegeCard key={c.name} college={c} index={i} />)}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Right sidebar */}
+              <div className="space-y-5">
+
+                {/* Financial */}
+                <div className="bg-[#f5f5f7] rounded-2xl p-5">
+                  <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">
+                    💰 Financial Picture
+                  </h2>
+                  <p className="text-[13px] text-[#424245] leading-relaxed mb-3">
+                    {strategy.financial.summary}
+                  </p>
+                  <ul className="space-y-2">
+                    {strategy.financial.highlights.map((h, i) => (
+                      <li key={i} className="flex gap-2 text-[13px] text-[#1d1d1f]">
+                        <span className="text-green-500 font-[700] shrink-0">✓</span>
+                        {h}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Essay */}
+                <div className="bg-[#f5f5f7] rounded-2xl p-5">
+                  <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">
+                    ✍️ Your Essay Angle
+                  </h2>
+                  <p className="text-[13px] text-[#424245] leading-relaxed mb-3">
+                    {strategy.essay.angle}
+                  </p>
+                  <div className="bg-red-50 border border-red-100 rounded-xl p-3">
+                    <p className="text-[12px] text-red-700">
+                      <span className="font-[700]">Avoid: </span>
+                      {strategy.essay.avoid}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Timeline */}
+                <div className="bg-[#f5f5f7] rounded-2xl p-5">
+                  <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">
+                    📅 Your Next Steps
+                  </h2>
+                  <ol className="space-y-4">
+                    {strategy.timeline.map((t, i) => (
+                      <li key={i} className="flex gap-3">
+                        <div className="flex flex-col items-center">
+                          <div className="w-6 h-6 rounded-full bg-[#ff3b30] text-white text-[11px] font-[800] flex items-center justify-center shrink-0">
+                            {i + 1}
+                          </div>
+                          {i < strategy.timeline.length - 1 && (
+                            <div className="w-px flex-1 bg-[#e8e8ed] mt-1" />
+                          )}
+                        </div>
+                        <div className="pb-4">
+                          <div className="text-[11px] font-[700] text-[#ff3b30] uppercase tracking-wide mb-0.5">
+                            {t.when}
+                          </div>
+                          <div className="text-[13px] text-[#1d1d1f]">{t.action}</div>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+
+                {/* CTA */}
+                <button
+                  onClick={() => { setStrategy(null); setPhase('questions'); setQuestion(0); }}
+                  className="w-full py-3 rounded-2xl border-2 border-[#e8e8ed] text-[14px] font-[600] text-[#86868b] hover:border-[#1d1d1f] hover:text-[#1d1d1f] transition-colors"
+                >
+                  ↺ Regenerate with different answers
+                </button>
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="w-full py-3 rounded-2xl bg-[#ff3b30] text-white text-[14px] font-[700] hover:opacity-90 transition-opacity"
+                >
+                  Save & go to dashboard →
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+        <MobileNav />
+      </>
+    );
+  }
+
+  // ── Question flow ──────────────────────────────────────────────────────────
+  return (
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Progress bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-[#f5f5f7]">
+        <div
+          className="h-full bg-[#ff3b30] transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
+        {/* Wordmark */}
+        <div className="text-[18px] font-[800] text-[#1d1d1f] mb-12 tracking-tight">
+          due.college
+        </div>
+
+        {/* Question card */}
+        <div
+          className={`w-full max-w-lg transition-all duration-260 ${
+            animating ? 'opacity-0 translate-y-3' : 'opacity-100 translate-y-0'
+          }`}
+        >
+          {/* Step counter */}
+          <p className="text-[12px] font-[600] text-[#aeaeb2] mb-3 tracking-wide">
+            {question + 1} / {questions.length}
+          </p>
+
+          {/* Question */}
+          <h2 className="text-[28px] font-[800] tracking-tight text-[#1d1d1f] mb-2 leading-snug">
+            {q.label}
+          </h2>
+          <p className="text-[14px] text-[#86868b] mb-7">{q.sub}</p>
+
+          {/* Input */}
+          {q.type === 'pills' && 'options' in q && (
+            <div className="flex flex-wrap gap-3 mb-8">
+              {q.options!.map((opt) => (
+                <PillOption
+                  key={opt.value}
+                  selected={q.value === opt.value}
+                  onClick={() => { q.set(opt.value); }}
+                >
+                  {opt.label}
+                </PillOption>
+              ))}
+            </div>
+          )}
+
+          {q.type === 'textarea' && (
+            <textarea
+              ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+              value={q.value}
+              onChange={(e) => q.set(e.target.value)}
+              placeholder={q.placeholder}
+              rows={3}
+              className="w-full border-2 border-[#e8e8ed] rounded-2xl px-5 py-4 text-[16px] text-[#1d1d1f] placeholder:text-[#aeaeb2] focus:outline-none focus:border-[#ff3b30] transition-colors resize-none mb-6"
+            />
+          )}
+
+          {(q.type === 'text' || q.type === 'number') && (
+            <input
+              ref={inputRef as React.RefObject<HTMLInputElement>}
+              type={q.type}
+              value={q.value}
+              onChange={(e) => q.set(e.target.value)}
+              onKeyDown={handleKey}
+              placeholder={q.placeholder}
+              step={q.type === 'number' ? '0.01' : undefined}
+              className="w-full border-2 border-[#e8e8ed] rounded-2xl px-5 py-4 text-[18px] font-[600] text-[#1d1d1f] placeholder:text-[#aeaeb2] focus:outline-none focus:border-[#ff3b30] transition-colors mb-6"
+            />
+          )}
+
+          {error && (
+            <p className="text-red-500 text-[13px] mb-4">{error}</p>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center justify-between">
+            {q.canSkip && !isLast ? (
+              <button
+                onClick={advance}
+                className="text-[13px] text-[#aeaeb2] hover:text-[#86868b] transition-colors font-[500]"
+              >
+                Skip →
+              </button>
+            ) : (
+              <div />
+            )}
+
+            <button
+              onClick={advance}
+              disabled={!q.canSkip && !q.value.trim()}
+              className={`px-8 py-3.5 rounded-2xl text-[15px] font-[700] transition-all duration-200 ${
+                !q.canSkip && !q.value.trim()
+                  ? 'bg-[#e8e8ed] text-[#aeaeb2] cursor-not-allowed'
+                  : isLast
+                  ? 'bg-[#ff3b30] text-white hover:opacity-90 shadow-lg shadow-red-200'
+                  : 'bg-[#1d1d1f] text-white hover:opacity-90'
+              }`}
+            >
+              {isLast ? '✨ Build my strategy' : 'Continue →'}
+            </button>
+          </div>
+        </div>
+
+        {/* Keyboard hint */}
+        {q.type !== 'pills' && q.type !== 'textarea' && (
+          <p className="text-[12px] text-[#d2d2d7] mt-8">
+            Press <kbd className="bg-[#f5f5f7] px-2 py-0.5 rounded text-[#86868b] font-mono">Enter ↵</kbd> to continue
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}

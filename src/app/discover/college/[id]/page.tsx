@@ -184,7 +184,7 @@ export default function CollegeDetailPage() {
                   <div>
                     <div className="text-sm text-[#86868b]">Acceptance Rate</div>
                     <div className="font-[600] text-[#1d1d1f]">
-                      {college.acceptance_rate != null ? `${Math.round(college.acceptance_rate * 100)}%` : 'N/A'}
+                      {college.acceptance_rate != null ? `${college.acceptance_rate}%` : 'N/A'}
                     </div>
                   </div>
                   <div>
@@ -219,7 +219,7 @@ export default function CollegeDetailPage() {
                   <div>
                     <div className="text-sm text-[#86868b]">Job Placement Rate</div>
                     <div className="font-[600] text-[#1d1d1f]">
-                      {college.placement_rate != null ? `${Math.round(college.placement_rate * 100)}%` : 'N/A'}
+                      {college.placement_rate != null ? `${college.placement_rate}%` : 'N/A'}
                     </div>
                   </div>
                 </div>

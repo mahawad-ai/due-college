@@ -11,6 +11,7 @@ const SECTIONS = [
   {
     title: 'College Discovery',
     items: [
+      { href: '/strategy', emoji: '🤖', label: 'AI Strategy', desc: 'Your complete plan in 2 minutes — list, ED pick, essay angle' },
       { href: '/explore', emoji: '🔍', label: 'Explore Colleges', desc: 'Search & filter 1,000+ schools' },
       { href: '/suggest', emoji: '✨', label: 'AI College List', desc: 'Get AI-powered Reach/Match/Safety picks' },
       { href: '/profile', emoji: '🎓', label: 'Academic Profile', desc: 'GPA, scores, preferences' },

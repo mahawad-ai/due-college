@@ -189,6 +189,28 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          {/* ── AI Strategy Banner ── */}
+          <Link href="/strategy" className="no-underline block mb-8">
+            <div className="relative overflow-hidden rounded-2xl bg-[#1d1d1f] px-6 py-5 flex items-center justify-between gap-4 hover:opacity-95 transition-opacity cursor-pointer">
+              {/* Decorative glow */}
+              <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-[#ff3b30] opacity-10 blur-2xl pointer-events-none" />
+              <div>
+                <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#ff3b30] mb-1">
+                  ✨ New — AI Strategy
+                </p>
+                <p className="text-[17px] font-[800] text-white tracking-tight leading-snug">
+                  Get your complete college strategy in 2 minutes
+                </p>
+                <p className="text-[13px] text-[#86868b] mt-1">
+                  Personalized list · ED pick · essay angle · financial picture
+                </p>
+              </div>
+              <div className="shrink-0 bg-[#ff3b30] text-white text-[13px] font-[700] px-5 py-2.5 rounded-xl whitespace-nowrap">
+                Try it →
+              </div>
+            </div>
+          </Link>
+
           {/* ── Circle activity strip ── */}
           {(members.length > 0 || latestActivity) && (
             <div className="border border-[#e8e8ed] rounded-2xl px-5 py-3.5 mb-8 flex items-center gap-4 flex-wrap">
