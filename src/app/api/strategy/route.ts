@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
   // Pull all colleges — simple query, no complex OR filters
   const { data: allColleges, error: dbError } = await supabase
     .from('colleges')
-    .select('id, name, location, acceptance_rate, sat_25th, sat_75th, tuition_in_state, tuition_out_of_state, enrollment, type, size, region')
+    .select('id, name, city, state, acceptance_rate, sat_25th, sat_75th, tuition_in_state, tuition_out_of_state, enrollment, type, size, region')
     .limit(300);
 
   if (dbError) {
@@ -72,13 +72,14 @@ export async function POST(req: NextRequest) {
 
   const collegeContext = scored
     .map((c) => {
+      const location = [c.city, c.state].filter(Boolean).join(', ');
       const satRange =
         c.sat_25th && c.sat_75th ? `SAT ${c.sat_25th}–${c.sat_75th}` : 'test-blind';
       const tuition = c.tuition_out_of_state
         ? `$${Math.round(c.tuition_out_of_state / 1000)}k OOS`
         : '';
       const accept = c.acceptance_rate != null ? `${c.acceptance_rate}% accept` : '';
-      return `${c.name} | ${c.location || ''} | ${satRange} | ${accept} | ${tuition} | type:${c.type || ''} | size:${c.size || ''} | chance:${c._chance}%`;
+      return `${c.name} | ${location} | ${satRange} | ${accept} | ${tuition} | type:${c.type || ''} | size:${c.size || ''} | chance:${c._chance}%`;
     })
     .join('\n');
 
