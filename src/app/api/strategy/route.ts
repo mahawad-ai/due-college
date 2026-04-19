@@ -143,7 +143,7 @@ Select 12–15 schools from this list that are the best fit. Distribute: 3–4 r
 
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 2800,
       system: systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
