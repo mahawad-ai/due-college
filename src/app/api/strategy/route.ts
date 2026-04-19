@@ -94,21 +94,21 @@ Respond ONLY with a valid JSON object — no markdown fences, no explanation out
       "location": "string (city, state)",
       "match": "reach|target|likely",
       "chance": number (0-100, integer),
-      "why": "string (1-2 sentences, specific to this student's stats)"
+      "why": "string (max 20 words, specific to this student)"
     }
   ],
   "ed_pick": {
     "school": "string",
     "match": "reach|target|likely",
-    "reasoning": "string (2-3 sentences explaining why this ED pick maximizes their chances)"
+    "reasoning": "string (max 30 words on why ED here maximizes their chances)"
   },
   "financial": {
-    "summary": "string (2-3 sentences about their aid landscape given income)",
+    "summary": "string (max 30 words on their aid landscape)",
     "highlights": ["string", "string", "string"]
   },
   "essay": {
-    "angle": "string (3-4 sentences — specific advice on their personal statement angle based on what they said matters most to them)",
-    "avoid": "string (1 sentence — what cliché or mistake to avoid)"
+    "angle": "string (max 40 words of specific essay advice based on what matters most to them)",
+    "avoid": "string (max 15 words — the cliché to avoid)"
   },
   "timeline": [
     { "when": "string", "action": "string" }
@@ -117,7 +117,7 @@ Respond ONLY with a valid JSON object — no markdown fences, no explanation out
 }
 
 Rules:
-- colleges array: exactly 12–15 schools (3–4 reach, 5–6 target, 3–4 likely)
+- colleges array: exactly 12 schools (3 reach, 5 target, 4 likely)
 - Sort colleges: reaches first, then targets, then likelies
 - Be honest about chances — don't inflate them to be nice
 - For test-blind schools (UC system, etc.), set chance based on GPA and acceptance rate only
@@ -139,7 +139,7 @@ STUDENT PROFILE:
 AVAILABLE COLLEGES (name | location | SAT range | acceptance rate | tuition OOS | type | size | estimated chance for this student):
 ${collegeContext}
 
-Select 12–15 schools from this list that are the best fit. Distribute: 3–4 reaches, 5–6 targets, 3–4 likelies. Choose the ED pick from the target/reach group where ED gives the most strategic advantage.`;
+Select exactly 12 schools: 3 reaches, 5 targets, 4 likelies. Choose the ED pick from the target/reach group where ED gives the most strategic advantage. Keep all text fields concise — follow the word limits in the schema exactly.`;
 
   // Pick the best available model on this account
   let model = 'claude-haiku-4-5';
@@ -161,7 +161,7 @@ Select 12–15 schools from this list that are the best fit. Distribute: 3–4 r
   try {
     const message = await anthropic.messages.create({
       model,
-      max_tokens: 2800,
+      max_tokens: 4096,
       system: systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
     });
