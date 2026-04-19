@@ -96,7 +96,7 @@ function PillOption({
   );
 }
 
-function CollegeCard({ college, index }: { college: CollegeResult; index: number }) {
+function CollegeCard({ college, index, collegeIdMap }: { college: CollegeResult; index: number; collegeIdMap: Record<string, string> }) {
   const colors = matchColors[college.match];
   const [added, setAdded] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -104,20 +104,15 @@ function CollegeCard({ college, index }: { college: CollegeResult; index: number
   async function handleAdd() {
     setAdding(true);
     try {
-      // Search for the college by name to get its ID
-      const res = await fetch(`/api/college-search?q=${encodeURIComponent(college.name)}`);
-      const data = await res.json();
-      const match = (data.colleges || []).find((c: any) =>
-        c.name.toLowerCase().includes(college.name.toLowerCase().slice(0, 10))
-      );
-      if (match) {
+      const collegeId = collegeIdMap[college.name];
+      if (collegeId) {
         await fetch('/api/user-colleges', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ collegeIds: [match.id] }),
+          body: JSON.stringify({ collegeIds: [collegeId] }),
         });
+        setAdded(true);
       }
-      setAdded(true);
     } catch { /* ignore */ }
     setAdding(false);
   }
@@ -177,6 +172,7 @@ export default function StrategyPage() {
   const [animating, setAnimating] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [strategy, setStrategy] = useState<Strategy | null>(null);
+  const [collegeIdMap, setCollegeIdMap] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
   const [edAdded, setEdAdded] = useState(false);
 
@@ -200,10 +196,12 @@ export default function StrategyPage() {
     // Load saved strategy from last session
     try {
       const saved = localStorage.getItem('due_strategy');
+      const savedMap = localStorage.getItem('due_strategy_map');
       if (saved) {
         const s = JSON.parse(saved);
         if (s?.colleges?.length) {
           setStrategy(s);
+          if (savedMap) setCollegeIdMap(JSON.parse(savedMap));
           setPhase('results');
           return;
         }
@@ -364,8 +362,12 @@ export default function StrategyPage() {
         return;
       }
       setStrategy(data.strategy);
+      setCollegeIdMap(data.collegeIdMap || {});
       // Save to localStorage so it survives refresh
-      try { localStorage.setItem('due_strategy', JSON.stringify(data.strategy)); } catch { /* ignore */ }
+      try {
+        localStorage.setItem('due_strategy', JSON.stringify(data.strategy));
+        localStorage.setItem('due_strategy_map', JSON.stringify(data.collegeIdMap || {}));
+      } catch { /* ignore */ }
       setPhase('results');
     } catch {
       setError('Network error — please try again.');
@@ -509,7 +511,7 @@ export default function StrategyPage() {
                       Reaches — {reaches.length} school{reaches.length !== 1 ? 's' : ''}
                     </h2>
                     <div className="space-y-3">
-                      {reaches.map((c, i) => <CollegeCard key={c.name} college={c} index={i} />)}
+                      {reaches.map((c, i) => <CollegeCard key={c.name} college={c} index={i} collegeIdMap={collegeIdMap} />)}
                     </div>
                   </div>
                 )}
@@ -521,7 +523,7 @@ export default function StrategyPage() {
                       Targets — {targets.length} school{targets.length !== 1 ? 's' : ''}
                     </h2>
                     <div className="space-y-3">
-                      {targets.map((c, i) => <CollegeCard key={c.name} college={c} index={i} />)}
+                      {targets.map((c, i) => <CollegeCard key={c.name} college={c} index={i} collegeIdMap={collegeIdMap} />)}
                     </div>
                   </div>
                 )}
@@ -533,7 +535,7 @@ export default function StrategyPage() {
                       Likelies — {likelies.length} school{likelies.length !== 1 ? 's' : ''}
                     </h2>
                     <div className="space-y-3">
-                      {likelies.map((c, i) => <CollegeCard key={c.name} college={c} index={i} />)}
+                      {likelies.map((c, i) => <CollegeCard key={c.name} college={c} index={i} collegeIdMap={collegeIdMap} />)}
                     </div>
                   </div>
                 )}
@@ -606,8 +608,11 @@ export default function StrategyPage() {
                 {/* CTA */}
                 <button
                   onClick={() => {
-                    try { localStorage.removeItem('due_strategy'); } catch { /* ignore */ }
-                    setStrategy(null); setPhase('questions'); setQuestion(0); setEdAdded(false);
+                    try {
+                      localStorage.removeItem('due_strategy');
+                      localStorage.removeItem('due_strategy_map');
+                    } catch { /* ignore */ }
+                    setStrategy(null); setCollegeIdMap({}); setPhase('questions'); setQuestion(0); setEdAdded(false);
                   }}
                   className="w-full py-3 rounded-2xl border-2 border-[#e8e8ed] text-[14px] font-[600] text-[#86868b] hover:border-[#1d1d1f] hover:text-[#1d1d1f] transition-colors"
                 >

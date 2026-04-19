@@ -24,12 +24,28 @@ export default function DashboardPage() {
   const [syncing, setSyncing] = useState(false);
   const [circleData, setCircleData] = useState<CircleData | null>(null);
   const [essayStats, setEssayStats] = useState<{ total: number; done: number } | null>(null);
+  const [hasStrategy, setHasStrategy] = useState(false);
+  const [strategyHeadline, setStrategyHeadline] = useState('');
 
   // Filter / sort state
   const [filterCollege, setFilterCollege] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [showDone, setShowDone] = useState(false);
+
+  // Check for saved strategy in localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('due_strategy');
+      if (saved) {
+        const s = JSON.parse(saved);
+        if (s?.colleges?.length) {
+          setHasStrategy(true);
+          setStrategyHeadline(s.headline || '');
+        }
+      }
+    } catch { /* ignore */ }
+  }, []);
 
   const loadDashboard = useCallback(async () => {
     if (!user) return;
@@ -190,26 +206,49 @@ export default function DashboardPage() {
           </div>
 
           {/* ── AI Strategy Banner ── */}
-          <Link href="/strategy" className="no-underline block mb-8">
-            <div className="relative overflow-hidden rounded-2xl bg-[#1d1d1f] px-6 py-5 flex items-center justify-between gap-4 hover:opacity-95 transition-opacity cursor-pointer">
-              {/* Decorative glow */}
-              <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-[#ff3b30] opacity-10 blur-2xl pointer-events-none" />
-              <div>
-                <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#ff3b30] mb-1">
-                  ✨ New — AI Strategy
-                </p>
-                <p className="text-[17px] font-[800] text-white tracking-tight leading-snug">
-                  Get your complete college strategy in 2 minutes
-                </p>
-                <p className="text-[13px] text-[#86868b] mt-1">
-                  Personalized list · ED pick · essay angle · financial picture
-                </p>
+          <div className="relative overflow-hidden rounded-2xl bg-[#1d1d1f] px-6 py-5 mb-8">
+            <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-[#ff3b30] opacity-10 blur-2xl pointer-events-none" />
+            {hasStrategy ? (
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#ff3b30] mb-1">
+                    ✨ Your AI Strategy
+                  </p>
+                  {strategyHeadline ? (
+                    <p className="text-[16px] font-[700] text-white leading-snug mb-1">{strategyHeadline}</p>
+                  ) : (
+                    <p className="text-[16px] font-[700] text-white leading-snug mb-1">Your college strategy is ready</p>
+                  )}
+                  <p className="text-[13px] text-[#86868b]">College list · ED pick · essay angle · financial picture</p>
+                </div>
+                <div className="flex flex-col gap-2 shrink-0">
+                  <Link href="/strategy" className="no-underline bg-[#ff3b30] text-white text-[13px] font-[700] px-5 py-2.5 rounded-xl whitespace-nowrap text-center hover:opacity-90 transition-opacity">
+                    View results →
+                  </Link>
+                  <Link href="/strategy" onClick={() => { try { localStorage.removeItem('due_strategy'); localStorage.removeItem('due_strategy_map'); } catch { /* ignore */ } }} className="no-underline text-[12px] text-[#6e6e73] text-center hover:text-[#86868b] transition-colors">
+                    Retake assessment
+                  </Link>
+                </div>
               </div>
-              <div className="shrink-0 bg-[#ff3b30] text-white text-[13px] font-[700] px-5 py-2.5 rounded-xl whitespace-nowrap">
-                Try it →
+            ) : (
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#ff3b30] mb-1">
+                    ✨ New — AI Strategy
+                  </p>
+                  <p className="text-[17px] font-[800] text-white tracking-tight leading-snug">
+                    Get your complete college strategy in 2 minutes
+                  </p>
+                  <p className="text-[13px] text-[#86868b] mt-1">
+                    Personalized list · ED pick · essay angle · financial picture
+                  </p>
+                </div>
+                <Link href="/strategy" className="no-underline shrink-0 bg-[#ff3b30] text-white text-[13px] font-[700] px-5 py-2.5 rounded-xl whitespace-nowrap hover:opacity-90 transition-opacity">
+                  Try it →
+                </Link>
               </div>
-            </div>
-          </Link>
+            )}
+          </div>
 
           {/* ── Circle activity strip ── */}
           {(members.length > 0 || latestActivity) && (

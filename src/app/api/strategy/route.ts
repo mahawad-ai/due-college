@@ -104,6 +104,10 @@ export async function POST(req: NextRequest) {
     .sort((a, b) => b._chance - a._chance)
     .slice(0, 50);
 
+  // Build a name → id lookup so the client can add colleges without a search round-trip
+  const collegeIdMap: Record<string, string> = {};
+  scored.forEach((c) => { collegeIdMap[c.name] = c.id; });
+
   const collegeContext = scored
     .map((c) => {
       const location = [c.city, c.state].filter(Boolean).join(', ');
@@ -200,7 +204,7 @@ Pick 10 schools (3 reach, 4 target, 3 likely) from the list above. Return JSON o
       return NextResponse.json({ error: 'Strategy generation failed — please try again' }, { status: 500 });
     }
 
-    return NextResponse.json({ strategy });
+    return NextResponse.json({ strategy, collegeIdMap });
   } catch (err: any) {
     console.error('Strategy API error:', err);
     const msg = err?.message ?? err?.error?.message ?? 'Failed to generate strategy';
