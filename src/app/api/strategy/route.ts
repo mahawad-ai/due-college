@@ -3,7 +3,7 @@ import { currentUser } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import Anthropic from '@anthropic-ai/sdk';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY ?? '' });
 
 // Acceptance rate is stored as percentage (3.7 = 3.7%)
 function chanceScore(sat: number | null, gpa: number | null, college: any): number {
@@ -46,21 +46,22 @@ export async function POST(req: NextRequest) {
     home_state,
   } = body;
 
-  const supabase = createServerSupabaseClient();
-
-  // Pull colleges — broad filter so Claude has enough to work with
-  let query = supabase.from('colleges').select(
-    'id, name, location, acceptance_rate, sat_25th, sat_75th, tuition_in_state, tuition_out_of_state, enrollment, type, size, region'
-  );
-
-  // Narrow by SAT range if provided (±250 pts)
-  if (sat) {
-    query = query
-      .or(`sat_25th.is.null,sat_25th.lte.${sat + 250}`)
-      .or(`sat_75th.is.null,sat_75th.gte.${sat - 250}`);
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json({ error: 'ANTHROPIC_API_KEY is not configured' }, { status: 500 });
   }
 
-  const { data: allColleges } = await query.limit(300);
+  const supabase = createServerSupabaseClient();
+
+  // Pull all colleges — simple query, no complex OR filters
+  const { data: allColleges, error: dbError } = await supabase
+    .from('colleges')
+    .select('id, name, location, acceptance_rate, sat_25th, sat_75th, tuition_in_state, tuition_out_of_state, enrollment, type, size, region')
+    .limit(300);
+
+  if (dbError) {
+    console.error('Colleges query error:', dbError);
+    return NextResponse.json({ error: `Database error: ${dbError.message}` }, { status: 500 });
+  }
   const colleges = allColleges || [];
 
   // Score + sort — give Claude the best 60 candidates so prompt stays lean
@@ -165,8 +166,9 @@ Select 12–15 schools from this list that are the best fit. Distribute: 3–4 r
     }
 
     return NextResponse.json({ strategy });
-  } catch (err) {
+  } catch (err: any) {
     console.error('Strategy API error:', err);
-    return NextResponse.json({ error: 'Failed to generate strategy' }, { status: 500 });
+    const msg = err?.message ?? err?.error?.message ?? 'Failed to generate strategy';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
