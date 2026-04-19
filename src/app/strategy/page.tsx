@@ -175,6 +175,9 @@ export default function StrategyPage() {
   const [collegeIdMap, setCollegeIdMap] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
   const [edAdded, setEdAdded] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Form answers
   const [gpa, setGpa] = useState('');
@@ -373,6 +376,37 @@ export default function StrategyPage() {
       setError('Network error — please try again.');
       setPhase('questions');
     }
+  }
+
+  async function handleShare() {
+    // If we already have a URL, just copy / re-share it
+    if (shareUrl) {
+      if (typeof navigator !== 'undefined' && 'share' in navigator) {
+        try { await navigator.share({ title: strategy?.headline || 'My College Strategy', text: 'Check out my AI-powered college strategy on due.college!', url: shareUrl }); } catch { /* cancelled */ }
+      } else {
+        try { await navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(() => setCopied(false), 2500); } catch { /* ignore */ }
+      }
+      return;
+    }
+
+    setSharing(true);
+    try {
+      const res = await fetch('/api/strategy/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ strategy }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        setShareUrl(data.url);
+        if (typeof navigator !== 'undefined' && 'share' in navigator) {
+          try { await navigator.share({ title: strategy?.headline || 'My College Strategy', text: 'Check out my AI-powered college strategy on due.college!', url: data.url }); } catch { /* cancelled */ }
+        } else {
+          try { await navigator.clipboard.writeText(data.url); setCopied(true); setTimeout(() => setCopied(false), 2500); } catch { /* ignore */ }
+        }
+      }
+    } catch { /* ignore */ }
+    setSharing(false);
   }
 
   // ── Generating screen ──────────────────────────────────────────────────────
@@ -605,6 +639,52 @@ export default function StrategyPage() {
                   </ol>
                 </div>
 
+                {/* Share */}
+                <div className="bg-[#f5f5f7] rounded-2xl p-5">
+                  <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">
+                    📤 Share Your Strategy
+                  </h2>
+                  {shareUrl ? (
+                    <div className="space-y-3">
+                      <div className="bg-white border border-[#e8e8ed] rounded-xl px-3 py-2 text-[11px] text-[#424245] break-all font-mono leading-relaxed">
+                        {shareUrl}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(shareUrl)
+                              .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); })
+                              .catch(() => {});
+                          }}
+                          className="flex-1 py-2.5 rounded-xl bg-[#1d1d1f] text-white text-[13px] font-[700] hover:opacity-90 transition-opacity"
+                        >
+                          {copied ? '✓ Copied!' : '📋 Copy link'}
+                        </button>
+                        <button
+                          onClick={handleShare}
+                          className="flex-1 py-2.5 rounded-xl bg-[#ff3b30] text-white text-[13px] font-[700] hover:opacity-90 transition-opacity"
+                        >
+                          ↗ Share
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-[#aeaeb2] text-center">Anyone with this link can view your strategy</p>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-[13px] text-[#424245] mb-3">
+                        Send to parents, counselors, or post to Instagram Stories — no login needed to view.
+                      </p>
+                      <button
+                        onClick={handleShare}
+                        disabled={sharing}
+                        className="w-full py-3 rounded-xl bg-[#1d1d1f] text-white text-[14px] font-[700] hover:opacity-90 transition-opacity disabled:opacity-50"
+                      >
+                        {sharing ? 'Creating link…' : '↗ Share my strategy'}
+                      </button>
+                    </>
+                  )}
+                </div>
+
                 {/* CTA */}
                 <button
                   onClick={() => {
@@ -612,7 +692,7 @@ export default function StrategyPage() {
                       localStorage.removeItem('due_strategy');
                       localStorage.removeItem('due_strategy_map');
                     } catch { /* ignore */ }
-                    setStrategy(null); setCollegeIdMap({}); setPhase('questions'); setQuestion(0); setEdAdded(false);
+                    setStrategy(null); setCollegeIdMap({}); setPhase('questions'); setQuestion(0); setEdAdded(false); setShareUrl(null);
                   }}
                   className="w-full py-3 rounded-2xl border-2 border-[#e8e8ed] text-[14px] font-[600] text-[#86868b] hover:border-[#1d1d1f] hover:text-[#1d1d1f] transition-colors"
                 >
