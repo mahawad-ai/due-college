@@ -98,6 +98,30 @@ function PillOption({
 
 function CollegeCard({ college, index }: { college: CollegeResult; index: number }) {
   const colors = matchColors[college.match];
+  const [added, setAdded] = useState(false);
+  const [adding, setAdding] = useState(false);
+
+  async function handleAdd() {
+    setAdding(true);
+    try {
+      // Search for the college by name to get its ID
+      const res = await fetch(`/api/college-search?q=${encodeURIComponent(college.name)}`);
+      const data = await res.json();
+      const match = (data.colleges || []).find((c: any) =>
+        c.name.toLowerCase().includes(college.name.toLowerCase().slice(0, 10))
+      );
+      if (match) {
+        await fetch('/api/user-colleges', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ collegeIds: [match.id] }),
+        });
+      }
+      setAdded(true);
+    } catch { /* ignore */ }
+    setAdding(false);
+  }
+
   return (
     <div
       className={`rounded-2xl border ${colors.bg} ${colors.border} p-4 transition-all duration-300`}
@@ -108,11 +132,22 @@ function CollegeCard({ college, index }: { college: CollegeResult; index: number
           <div className="font-[700] text-[#1d1d1f] text-[15px]">{college.name}</div>
           <div className="text-[12px] text-[#86868b] mt-0.5">{college.location}</div>
         </div>
-        <span
-          className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-[800] uppercase tracking-wide ${colors.badge}`}
-        >
-          {college.match}
-        </span>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className={`px-3 py-1 rounded-full text-[11px] font-[800] uppercase tracking-wide ${colors.badge}`}>
+            {college.match}
+          </span>
+          <button
+            onClick={handleAdd}
+            disabled={adding || added}
+            className={`px-3 py-1 rounded-full text-[11px] font-[700] transition-all ${
+              added
+                ? 'bg-green-100 text-green-700'
+                : 'bg-white border border-[#d2d2d7] text-[#1d1d1f] hover:border-[#1d1d1f]'
+            }`}
+          >
+            {added ? '✓ Added' : adding ? '…' : '+ Add'}
+          </button>
+        </div>
       </div>
       <div className="mb-2">
         <div className="flex justify-between text-[12px] text-[#86868b] mb-1">
@@ -143,6 +178,7 @@ export default function StrategyPage() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [strategy, setStrategy] = useState<Strategy | null>(null);
   const [error, setError] = useState('');
+  const [edAdded, setEdAdded] = useState(false);
 
   // Form answers
   const [gpa, setGpa] = useState('');
@@ -156,10 +192,24 @@ export default function StrategyPage() {
 
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
 
-  // Pre-fill from existing student profile
+  // Pre-fill from existing student profile + load saved strategy
   useEffect(() => {
     if (!isLoaded) return;
     if (!user) { router.push('/login'); return; }
+
+    // Load saved strategy from last session
+    try {
+      const saved = localStorage.getItem('due_strategy');
+      if (saved) {
+        const s = JSON.parse(saved);
+        if (s?.colleges?.length) {
+          setStrategy(s);
+          setPhase('results');
+          return;
+        }
+      }
+    } catch { /* ignore */ }
+
     fetch('/api/student-profile')
       .then((r) => r.json())
       .then(({ profile }) => {
@@ -314,6 +364,8 @@ export default function StrategyPage() {
         return;
       }
       setStrategy(data.strategy);
+      // Save to localStorage so it survives refresh
+      try { localStorage.setItem('due_strategy', JSON.stringify(data.strategy)); } catch { /* ignore */ }
       setPhase('results');
     } catch {
       setError('Network error — please try again.');
@@ -420,9 +472,34 @@ export default function StrategyPage() {
                   }`}>
                     {strategy.ed_pick.match}
                   </span>
-                  <p className="text-[14px] text-[#aeaeb2] leading-relaxed">
+                  <p className="text-[14px] text-[#aeaeb2] leading-relaxed mb-4">
                     {strategy.ed_pick.reasoning}
                   </p>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await fetch('/api/custom-deadlines', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            college_name: strategy.ed_pick.school,
+                            type: 'ED1',
+                            due_date: '2026-11-01',
+                            notes: 'Added from AI Strategy — confirm exact date on school website',
+                          }),
+                        });
+                        setEdAdded(true);
+                      } catch { /* ignore */ }
+                    }}
+                    disabled={edAdded}
+                    className={`text-[13px] font-[700] px-4 py-2 rounded-xl transition-all ${
+                      edAdded
+                        ? 'bg-green-800 text-green-300'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    {edAdded ? '✓ Deadline added' : '+ Add ED deadline to my list'}
+                  </button>
                 </div>
 
                 {/* Reaches */}
@@ -528,7 +605,10 @@ export default function StrategyPage() {
 
                 {/* CTA */}
                 <button
-                  onClick={() => { setStrategy(null); setPhase('questions'); setQuestion(0); }}
+                  onClick={() => {
+                    try { localStorage.removeItem('due_strategy'); } catch { /* ignore */ }
+                    setStrategy(null); setPhase('questions'); setQuestion(0); setEdAdded(false);
+                  }}
                   className="w-full py-3 rounded-2xl border-2 border-[#e8e8ed] text-[14px] font-[600] text-[#86868b] hover:border-[#1d1d1f] hover:text-[#1d1d1f] transition-colors"
                 >
                   ↺ Regenerate with different answers

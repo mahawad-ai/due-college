@@ -62,11 +62,20 @@ export default function EssaysPage() {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [essayTip, setEssayTip] = useState<{ angle: string; avoid: string } | null>(null);
 
   useEffect(() => {
     if (!isLoaded) return;
     if (!user) { router.push('/login'); return; }
     fetch('/api/essays').then(r => r.json()).then(d => { setEssays(d.essays || []); setLoading(false); });
+    // Load essay tip from AI strategy if available
+    try {
+      const saved = localStorage.getItem('due_strategy');
+      if (saved) {
+        const s = JSON.parse(saved);
+        if (s?.essay?.angle) setEssayTip(s.essay);
+      }
+    } catch { /* ignore */ }
   }, [isLoaded, user, router]);
 
   function openAdd() { setForm(EMPTY); setEditingId(null); setShowForm(true); }
@@ -125,6 +134,17 @@ export default function EssaysPage() {
               {finalCount} final · {essays.length - finalCount} in progress
             </p>
           </div>
+
+          {/* AI Essay Tip from Strategy */}
+          {essayTip && (
+            <div className="mb-8 bg-[#1d1d1f] rounded-2xl p-5">
+              <p className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#ff3b30] mb-2">✨ Your AI Strategy — Essay Angle</p>
+              <p className="text-[14px] text-white leading-relaxed mb-2">{essayTip.angle}</p>
+              <p className="text-[12px] text-[#86868b]">
+                <span className="text-[#ff3b30] font-[600]">Avoid: </span>{essayTip.avoid}
+              </p>
+            </div>
+          )}
 
           {/* Overall progress bar */}
           {essays.length > 0 && (

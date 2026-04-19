@@ -13,6 +13,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ college: data });
   }
 
+  // Name search for strategy "Add" buttons
+  const q = searchParams.get('q');
+  if (q) {
+    const supabase = createServerSupabaseClient();
+    const { data } = await supabase.from('colleges').select('id, name, city, state').ilike('name', `%${q}%`).limit(5);
+    return NextResponse.json({ colleges: data || [] });
+  }
+
   const satMin = searchParams.get('sat_min') ? parseInt(searchParams.get('sat_min')!) : null;
   const satMax = searchParams.get('sat_max') ? parseInt(searchParams.get('sat_max')!) : null;
   const acceptanceRateMax = searchParams.get('acceptance_rate_max')
