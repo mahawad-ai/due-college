@@ -273,6 +273,7 @@ export default function StrategyPage() {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [shareError, setShareError] = useState('');
   const [checkedItems, setCheckedItems] = useState<boolean[]>([]);
 
   // Form answers
@@ -479,14 +480,18 @@ export default function StrategyPage() {
   }
 
   async function handleShare() {
+    setShareError('');
+
+    // Already have a URL — just copy / re-share it
     if (shareUrl) {
       if (typeof navigator !== 'undefined' && 'share' in navigator) {
-        try { await navigator.share({ title: strategy?.headline || 'My College Strategy', text: 'Check out my AI-powered college strategy on due.college!', url: shareUrl }); } catch { /* cancelled */ }
+        try { await navigator.share({ title: strategy?.headline || 'My College Strategy', text: 'Check out my AI-powered college strategy on due.college!', url: shareUrl }); } catch { /* user cancelled */ }
       } else {
         try { await navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(() => setCopied(false), 2500); } catch {}
       }
       return;
     }
+
     setSharing(true);
     try {
       const res = await fetch('/api/strategy/share', {
@@ -495,15 +500,22 @@ export default function StrategyPage() {
         body: JSON.stringify({ strategy }),
       });
       const data = await res.json();
+      if (!res.ok || data.error) {
+        setShareError(data.error || 'Could not create share link. Please try again.');
+        setSharing(false);
+        return;
+      }
       if (data.url) {
         setShareUrl(data.url);
         if (typeof navigator !== 'undefined' && 'share' in navigator) {
-          try { await navigator.share({ title: strategy?.headline || 'My College Strategy', text: 'Check out my AI-powered college strategy on due.college!', url: data.url }); } catch {}
+          try { await navigator.share({ title: strategy?.headline || 'My College Strategy', text: 'Check out my AI-powered college strategy on due.college!', url: data.url }); } catch { /* user cancelled */ }
         } else {
           try { await navigator.clipboard.writeText(data.url); setCopied(true); setTimeout(() => setCopied(false), 2500); } catch {}
         }
       }
-    } catch {}
+    } catch {
+      setShareError('Network error — please try again.');
+    }
     setSharing(false);
   }
 
@@ -566,13 +578,22 @@ export default function StrategyPage() {
                   <span>{likelies.length} likelies</span>
                 </div>
               </div>
-              <button
-                onClick={handleShare}
-                disabled={sharing}
-                className="shrink-0 mt-1 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#f5f5f7] border border-[#e8e8ed] text-[13px] font-[700] text-[#1d1d1f] hover:bg-[#e8e8ed] transition-colors disabled:opacity-50"
-              >
-                {sharing ? '…' : '↗ Share'}
-              </button>
+              <div className="shrink-0 mt-1 flex flex-col items-end gap-1">
+                <button
+                  onClick={handleShare}
+                  disabled={sharing}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-[700] transition-colors disabled:opacity-50 ${
+                    shareError
+                      ? 'bg-red-50 border border-red-200 text-red-600 hover:bg-red-100'
+                      : 'bg-[#f5f5f7] border border-[#e8e8ed] text-[#1d1d1f] hover:bg-[#e8e8ed]'
+                  }`}
+                >
+                  {sharing ? '…' : shareError ? '↗ Retry share' : '↗ Share'}
+                </button>
+                {shareError && (
+                  <p className="text-[11px] text-red-500 text-right max-w-[160px] leading-tight">{shareError}</p>
+                )}
+              </div>
             </div>
 
             {/* ── Verdict ─────────────────────────────────────────────── */}
