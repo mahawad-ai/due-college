@@ -585,29 +585,6 @@ export default function StrategyPage() {
               </p>
             </div>
 
-            {/* ── Tier map ─────────────────────────────────────────────── */}
-            <TierMap colleges={strategy.colleges} />
-
-            {/* ── College sections ──────────────────────────────────────── */}
-            {[
-              { label: 'Reaches', list: reaches },
-              { label: 'Targets', list: targets },
-              { label: 'Likelies', list: likelies },
-            ].map(({ label, list }) =>
-              list.length > 0 ? (
-                <div key={label} className="mb-8">
-                  <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">
-                    {label} — {list.length} school{list.length !== 1 ? 's' : ''}
-                  </h2>
-                  <div className="space-y-4">
-                    {list.map((c, i) => (
-                      <CollegeCard key={c.name} college={c} index={i} collegeIdMap={collegeIdMap} />
-                    ))}
-                  </div>
-                </div>
-              ) : null
-            )}
-
             {/* ── 3-Move cards ─────────────────────────────────────────── */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
 
@@ -681,6 +658,29 @@ export default function StrategyPage() {
                 </ul>
               </div>
             </div>
+
+            {/* ── Tier map ─────────────────────────────────────────────── */}
+            <TierMap colleges={strategy.colleges} />
+
+            {/* ── College sections ──────────────────────────────────────── */}
+            {[
+              { label: 'Reaches', list: reaches },
+              { label: 'Targets', list: targets },
+              { label: 'Likelies', list: likelies },
+            ].map(({ label, list }) =>
+              list.length > 0 ? (
+                <div key={label} className="mb-8">
+                  <h2 className="text-[11px] font-[700] uppercase tracking-[0.7px] text-[#86868b] mb-3">
+                    {label} — {list.length} school{list.length !== 1 ? 's' : ''}
+                  </h2>
+                  <div className="space-y-4">
+                    {list.map((c, i) => (
+                      <CollegeCard key={c.name} college={c} index={i} collegeIdMap={collegeIdMap} />
+                    ))}
+                  </div>
+                </div>
+              ) : null
+            )}
 
             {/* ── Checklist ────────────────────────────────────────────── */}
             <div className="bg-[#f5f5f7] rounded-2xl p-6 mb-6">
