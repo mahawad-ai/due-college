@@ -297,22 +297,32 @@ export default function CirclePage() {
     }
   }
 
-  // Join a challenge
+  // Join or leave a challenge (toggle)
   async function handleJoinChallenge(challengeId: string) {
     if (!data || joiningChallenge) return;
     setJoiningChallenge(challengeId);
+
+    // Capture current join state BEFORE the API call so the optimistic update is correct
+    const isCurrentlyJoined = data.challenges.find(c => c.id === challengeId)?.user_joined ?? false;
+
     try {
       const res = await fetch(`/api/circle/challenges/${challengeId}/join`, {
         method: 'POST',
       });
-      if (!res.ok) throw new Error('Failed to join challenge');
+      if (!res.ok) throw new Error('Failed');
       setData((prev) => {
         if (!prev) return prev;
         return {
           ...prev,
           challenges: prev.challenges.map((c) =>
             c.id === challengeId
-              ? { ...c, user_joined: true, member_count: (c.member_count ?? 0) + 1 }
+              ? {
+                  ...c,
+                  user_joined: !isCurrentlyJoined,
+                  member_count: isCurrentlyJoined
+                    ? Math.max(0, (c.member_count ?? 0) - 1)
+                    : (c.member_count ?? 0) + 1,
+                }
               : c
           ),
         };
