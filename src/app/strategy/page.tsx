@@ -499,9 +499,12 @@ export default function StrategyPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ strategy }),
       });
-      const data = await res.json();
+      // Parse carefully — server errors can return HTML, not JSON
+      let data: any = {};
+      try { data = await res.json(); } catch { /* non-JSON response */ }
+
       if (!res.ok || data.error) {
-        setShareError(data.error || 'Could not create share link. Please try again.');
+        setShareError(data.error || `Server error ${res.status} — please try again.`);
         setSharing(false);
         return;
       }
@@ -513,8 +516,8 @@ export default function StrategyPage() {
           try { await navigator.clipboard.writeText(data.url); setCopied(true); setTimeout(() => setCopied(false), 2500); } catch {}
         }
       }
-    } catch {
-      setShareError('Network error — please try again.');
+    } catch (err: any) {
+      setShareError(err?.message || 'Network error — please try again.');
     }
     setSharing(false);
   }
