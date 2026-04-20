@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
-  const { gpa, sat, act, intended_major, income_range, distance_pref, what_matters, home_state } = body;
+  const { gpa, sat, act, intended_major, income_range, distance_pref, what_matters, home_state, achievement } = body;
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: 'ANTHROPIC_API_KEY is not configured' }, { status: 500 });
@@ -127,9 +127,10 @@ CRITICAL JSON RULES:
 
 Output this exact shape:
 {
+  "verdict": "2 sentences max. Direct honest assessment — their strongest asset and clearest move. Use single quotes if needed.",
   "headline": "one sentence summary of their position",
   "colleges": [
-    {"name": "...", "location": "City, ST", "match": "reach|target|likely", "chance": 45, "why": "15 words max"}
+    {"name": "...", "location": "City, ST", "match": "reach|target|likely", "chance": 45, "why": "12 words: why this chance at this school", "pitch": "10 words: why this school fits their specific goals"}
   ],
   "ed_pick": {"school": "...", "match": "target", "reasoning": "25 words max why ED here helps"},
   "financial": {
@@ -137,7 +138,7 @@ Output this exact shape:
     "highlights": ["school known for merit aid", "school 2", "school 3"]
   },
   "essay": {
-    "angle": "35 words of advice based on what matters most to them",
+    "angle": "35 words of advice based on what matters most and their achievement",
     "avoid": "the cliche to skip in 10 words"
   },
   "timeline": [
@@ -152,6 +153,7 @@ Output this exact shape:
 colleges array: exactly 10 schools total — 3 reach, 4 target, 3 likely. Reaches first, then targets, then likelies.`;
 
   const userMessage = `Student: GPA ${gpa ?? 'unknown'}, SAT ${sat ?? 'none'}${act ? `/ACT ${act}` : ''}, major: ${intended_major || 'undecided'}, from ${home_state || 'unknown'}, income: ${income_range || 'unknown'}, distance: ${distance_pref || 'anywhere'}.
+${achievement ? `Biggest achievement: ${achievement}` : ''}
 What matters most: ${what_matters || 'not provided'}
 
 Colleges (name|location|SAT|accept%|tuition|chance):
@@ -204,7 +206,35 @@ Pick 10 schools (3 reach, 4 target, 3 likely) from the list above. Return JSON o
       return NextResponse.json({ error: 'Strategy generation failed — please try again' }, { status: 500 });
     }
 
-    return NextResponse.json({ strategy, collegeIdMap });
+    // ── Enrich colleges with real DB IDs + acceptance_rate ────────────────
+    // Build lookup from the pre-scored pool (fast, no extra query for most cases)
+    const scoredByName: Record<string, { id: string; acceptance_rate: number | null }> = {};
+    scored.forEach(c => {
+      scoredByName[c.name.toLowerCase().trim()] = { id: c.id, acceptance_rate: c.acceptance_rate ?? null };
+    });
+
+    // Also query DB directly for the exact names Claude returned (handles name drift)
+    const pickedNames: string[] = (strategy.colleges || []).map((c: any) => c.name).filter(Boolean);
+    if (pickedNames.length > 0) {
+      const { data: dbMatches } = await supabase
+        .from('colleges')
+        .select('id, name, acceptance_rate')
+        .in('name', pickedNames);
+      (dbMatches || []).forEach((c: any) => {
+        scoredByName[c.name.toLowerCase().trim()] = { id: c.id, acceptance_rate: c.acceptance_rate ?? null };
+      });
+    }
+
+    // Build reliable map and inject acceptance_rate into each college
+    const reliableMap: Record<string, string> = {};
+    strategy.colleges = (strategy.colleges || []).map((c: any) => {
+      const key = (c.name ?? '').toLowerCase().trim();
+      const found = scoredByName[key];
+      if (found) reliableMap[c.name] = found.id;
+      return { ...c, acceptance_rate: found?.acceptance_rate ?? null };
+    });
+
+    return NextResponse.json({ strategy, collegeIdMap: reliableMap });
   } catch (err: any) {
     console.error('Strategy API error:', err);
     const msg = err?.message ?? err?.error?.message ?? 'Failed to generate strategy';

@@ -45,9 +45,13 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Trigger Inngest reminders
-  for (const collegeId of collegeIds) {
-    await inngest.send({ name: 'app/college.added', data: { userId: user.id, collegeId } });
+  // Trigger Inngest reminders (non-fatal — college is already saved even if this fails)
+  try {
+    for (const collegeId of collegeIds) {
+      await inngest.send({ name: 'app/college.added', data: { userId: user.id, collegeId } });
+    }
+  } catch (inngestErr) {
+    console.error('Inngest send failed (non-fatal):', inngestErr);
   }
 
   // Auto-post to Circle — look up college names then post
