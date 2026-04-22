@@ -24,8 +24,7 @@ export default function StartPage() {
           <SignUp
             routing="path"
             path="/start"
-            fallbackRedirectUrl="/onboarding"
-            afterSignUpUrl="/onboarding"
+            fallbackRedirectUrl="/dashboard"
             appearance={{
               elements: {
                 rootBox: 'w-full max-w-md',

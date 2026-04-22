@@ -2,9 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Webhook } from 'svix';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { Resend } from 'resend';
+import { createHmac } from 'crypto';
 import { renderWelcomeEmail } from '@/emails/welcome';
 
 const getResend = () => new Resend(process.env.RESEND_API_KEY || 're_placeholder');
+
+function buildUnsubscribeUrl(userId: string): string {
+  const secret = process.env.CLERK_SECRET_KEY || 'fallback-secret';
+  const sig = createHmac('sha256', secret).update(userId).digest('hex');
+  return `https://due.college/api/unsubscribe?uid=${encodeURIComponent(userId)}&sig=${sig}`;
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -51,13 +58,14 @@ export async function POST(req: NextRequest) {
     // Send welcome email
     if (email) {
       try {
-        await resend.emails.send({
+        await getResend().emails.send({
           from: 'due.college <reminders@due.college>',
           to: email,
           subject: "You're all set — here are your deadlines",
           html: renderWelcomeEmail({
             studentName: first_name || 'there',
             colleges: [],
+            unsubscribeUrl: buildUnsubscribeUrl(id),
           }),
         });
       } catch (e) {

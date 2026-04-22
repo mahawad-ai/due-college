@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { inngest } from '../client';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { addDays, subDays, parseISO, isFuture } from 'date-fns';
+import { subDays, parseISO, isFuture } from 'date-fns';
 
 export const scheduleReminders = inngest.createFunction(
   { id: 'schedule-reminders', name: 'Schedule Deadline Reminders' },
@@ -11,35 +11,37 @@ export const scheduleReminders = inngest.createFunction(
     const supabase = createServerSupabaseClient();
 
     // Get user's notification preferences
-    const { data: prefs } = await step.run('get-prefs', async () => {
-      return supabase
+    const prefs = await step.run('get-prefs', async () => {
+      const { data } = await supabase
         .from('notification_preferences')
         .select('*')
         .eq('user_id', userId)
         .single();
+      return data;
     });
 
     const reminderDays = [
-      { days: 30, enabled: prefs?.data?.remind_30_days ?? true },
-      { days: 14, enabled: prefs?.data?.remind_14_days ?? true },
-      { days: 7, enabled: prefs?.data?.remind_7_days ?? true },
-      { days: 3, enabled: prefs?.data?.remind_3_days ?? true },
-      { days: 1, enabled: prefs?.data?.remind_1_day ?? true },
+      { days: 30, enabled: prefs?.remind_30_days ?? true },
+      { days: 14, enabled: prefs?.remind_14_days ?? true },
+      { days: 7, enabled: prefs?.remind_7_days ?? true },
+      { days: 3, enabled: prefs?.remind_3_days ?? true },
+      { days: 1, enabled: prefs?.remind_1_day ?? true },
     ].filter((r) => r.enabled);
 
     // Get all deadlines for this college
-    const { data: deadlines } = await step.run('get-deadlines', async () => {
-      return supabase
+    const deadlines = await step.run('get-deadlines', async () => {
+      const { data } = await supabase
         .from('deadlines')
         .select('*')
         .eq('college_id', collegeId);
+      return data;
     });
 
-    if (!deadlines?.data) return { scheduled: 0 };
+    if (!deadlines) return { scheduled: 0 };
 
     let scheduled = 0;
 
-    for (const deadline of deadlines.data) {
+    for (const deadline of deadlines) {
       const deadlineDate = parseISO(deadline.date);
 
       for (const { days } of reminderDays) {

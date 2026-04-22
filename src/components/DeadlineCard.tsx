@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { DeadlineWithCollege } from '@/lib/types';
+import { NormalizedDeadline, DeadlineWithCollege } from '@/lib/types';
 import { formatDate, formatDaysRemaining, getDeadlineTypeColor, cn } from '@/lib/utils';
 import CollegeLogo from '@/components/CollegeLogo';
 
 interface DeadlineCardProps {
-  deadline: DeadlineWithCollege;
+  deadline: DeadlineWithCollege | NormalizedDeadline;
   onToggleSubmitted?: (deadlineId: string, submitted: boolean) => Promise<void>;
 }
 
@@ -55,7 +55,11 @@ export default function DeadlineCard({ deadline, onToggleSubmitted }: DeadlineCa
       <div className="flex items-center justify-between gap-3">
         {/* Left: logo + name + meta */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <CollegeLogo name={deadline.college.name} website={deadline.college.website} size="sm" />
+          {'college' in deadline && deadline.college ? (
+            <CollegeLogo name={deadline.college.name} website={deadline.college.website} size="sm" />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-[#f5f5f7] flex items-center justify-center text-[14px]">📋</div>
+          )}
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span
@@ -64,12 +68,18 @@ export default function DeadlineCard({ deadline, onToggleSubmitted }: DeadlineCa
                   urgencyDotColor(deadline.urgency, submitted)
                 )}
               />
-              <Link
-                href={`/school/${deadline.college_id}`}
-                className="font-[600] text-[#1d1d1f] text-[15px] hover:text-[#ff3b30] transition-colors leading-tight truncate block"
-              >
-                {deadline.college.name}
-              </Link>
+              {deadline.college_id ? (
+                <Link
+                  href={`/school/${deadline.college_id}`}
+                  className="font-[600] text-[#1d1d1f] text-[15px] hover:text-[#ff3b30] transition-colors leading-tight truncate block"
+                >
+                  {'college' in deadline && deadline.college ? deadline.college.name : ('college_name' in deadline ? deadline.college_name : deadline.college_id)}
+                </Link>
+              ) : (
+                <span className="font-[600] text-[#1d1d1f] text-[15px] leading-tight truncate block">
+                  {'college_name' in deadline ? deadline.college_name : 'Personal'}
+                </span>
+              )}
             </div>
             <div className="flex items-center flex-wrap gap-2 pl-3.5">
               <span className={cn('text-[11px] font-[700] px-2 py-0.5 rounded-full', typeColor)}>

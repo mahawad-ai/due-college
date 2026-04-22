@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { Resend } from 'resend';
+import { renderCircleJoinedEmail } from '@/emails/circle-joined';
+
+const getResend = () => new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
 // POST /api/circle/join — join a circle via invite code
 export async function POST(req: NextRequest) {
@@ -40,5 +44,46 @@ export async function POST(req: NextRequest) {
     content: `${user.firstName || 'A new friend'} joined the Circle! 🎉`,
   });
 
+  // Notify circle owner
+  notifyOwner(circle, user, supabase).catch(console.error);
+
   return NextResponse.json({ success: true, circle_id: circle.id });
+}
+
+async function notifyOwner(
+  circle: { id: string; created_by: string },
+  joiner: Awaited<ReturnType<typeof currentUser>>,
+  supabase: ReturnType<typeof createServerSupabaseClient>
+) {
+  // Don't notify if the owner is joining their own circle
+  if (circle.created_by === joiner?.id) return;
+
+  const { data: owner } = await supabase
+    .from('users')
+    .select('email, name')
+    .eq('id', circle.created_by)
+    .single();
+
+  if (!owner?.email) return;
+
+  const { count: memberCount } = await supabase
+    .from('circle_members')
+    .select('*', { count: 'exact', head: true })
+    .eq('circle_id', circle.id);
+
+  const joinerName = joiner?.firstName
+    ? `${joiner.firstName} ${joiner.lastName || ''}`.trim()
+    : joiner?.emailAddresses[0]?.emailAddress || 'Someone';
+
+  await getResend().emails.send({
+    from: 'due.college <reminders@due.college>',
+    to: owner.email,
+    subject: `${joinerName} joined your Circle! 🎉`,
+    html: renderCircleJoinedEmail({
+      ownerName: owner.name || 'there',
+      joinerName,
+      memberCount: memberCount || 1,
+      circleUrl: 'https://due.college/circle',
+    }),
+  });
 }

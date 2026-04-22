@@ -17,52 +17,61 @@ export const sendParentReminder = inngest.createFunction(
   async ({ event, step }) => {
     const { userId, deadlineId, daysRemaining } = event.data;
     const supabase = createServerSupabaseClient();
+    const resend = getResend();
 
     // Check if parent connection exists
-    const { data: connection } = await step.run('get-parent-connection', async () => {
-      return supabase
+    const connection = await step.run('get-parent-connection', async () => {
+      const { data } = await supabase
         .from('parent_connections')
         .select('*')
         .eq('student_user_id', userId)
         .single();
+      return data;
     });
 
-    if (!connection?.data) return { skipped: 'no parent connection' };
+    if (!connection) return { skipped: 'no parent connection' };
 
     // Get student info
-    const { data: student } = await step.run('get-student', async () => {
-      return supabase.from('users').select('name, subscription_tier').eq('id', userId).single();
+    const student = await step.run('get-student', async () => {
+      const { data } = await supabase
+        .from('users')
+        .select('name, subscription_tier')
+        .eq('id', userId)
+        .single();
+      return data;
     });
 
     // Get deadline with college
-    const { data: deadline } = await step.run('get-deadline', async () => {
-      return supabase
+    const deadline = await step.run('get-deadline', async () => {
+      const { data } = await supabase
         .from('deadlines')
         .select('*, college:colleges(name)')
         .eq('id', deadlineId)
         .single();
+      return data;
     });
 
-    if (!deadline?.data) return { skipped: 'deadline not found' };
+    if (!deadline) return { skipped: 'deadline not found' };
 
     // Check if already submitted
-    const { data: status } = await step.run('check-status', async () => {
-      return supabase
+    const status = await step.run('check-status', async () => {
+      const { data } = await supabase
         .from('user_deadline_status')
         .select('submitted')
         .eq('user_id', userId)
         .eq('deadline_id', deadlineId)
         .single();
+      return data;
     });
 
-    if (status?.data?.submitted) return { skipped: 'already submitted' };
+    if (status?.submitted) return { skipped: 'already submitted' };
 
-    const studentName = student?.data?.name || 'Your student';
-    const collegeName = deadline.data.college?.name || 'College';
-    const deadlineType = deadline.data.type;
-    const deadlineDate = formatDate(deadline.data.date);
-    const parentName = connection.data.parent_name;
-    const accessToken = connection.data.access_token;
+    const studentName = student?.name || 'Your student';
+    const collegeName = deadline.college?.name || 'College';
+    const deadlineType = deadline.type;
+    const deadlineDate = formatDate(deadline.date);
+    const parentName = connection.parent_name;
+    const accessToken = connection.access_token;
 
     // Send parent email
     await step.run('send-parent-email', async () => {
@@ -70,7 +79,7 @@ export const sendParentReminder = inngest.createFunction(
 
       return resend.emails.send({
         from: 'due.college <reminders@due.college>',
-        to: connection.data.parent_email,
+        to: connection.parent_email,
         subject: `${studentName}'s ${collegeName} ${deadlineType} is in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}`,
         html: `
 <!DOCTYPE html>
@@ -109,14 +118,14 @@ export const sendParentReminder = inngest.createFunction(
     });
 
     // Send parent SMS if enabled and student is on family plan
-    const isFamilyPlan = student?.data?.subscription_tier === 'family';
-    if (connection.data.sms_enabled && connection.data.parent_phone && isFamilyPlan) {
+    const isFamilyPlan = student?.subscription_tier === 'family';
+    if (connection.sms_enabled && connection.parent_phone && isFamilyPlan) {
       await step.run('send-parent-sms', async () => {
         const msg = `📚 ${studentName}'s ${collegeName} ${deadlineType} is due in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}. due.college/parent/${accessToken}`;
         return twilioClient.messages.create({
           body: msg.slice(0, 160),
           from: process.env.TWILIO_PHONE_NUMBER!,
-          to: connection.data.parent_phone!,
+          to: connection.parent_phone!,
         });
       });
     }

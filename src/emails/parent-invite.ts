@@ -1,3 +1,5 @@
+import { emailShell, ctaButton, divider } from './base';
+
 interface ParentInviteEmailProps {
   parentName: string;
   studentName: string;
@@ -12,78 +14,80 @@ export function renderParentInviteEmail({
   accessToken,
 }: ParentInviteEmailProps): string {
   const dashboardUrl = `https://due.college/parent/${accessToken}`;
+  const parentFirst = parentName.split(' ')[0];
+  const studentFirst = studentName.split(' ')[0];
 
-  const collegeList = colleges
+  const collegeRows = colleges
     .slice(0, 8)
     .map(
-      (name) =>
-        `<li style="padding:5px 0;color:#374151;font-size:14px">
-          <span style="color:#6bcb77;margin-right:8px">•</span>${name}
-        </li>`
+      (name) => `
+    <tr>
+      <td style="padding:7px 0;vertical-align:top;width:22px">
+        <div style="width:16px;height:16px;background:#166534;border-radius:50%;text-align:center;line-height:16px;font-size:9px;color:#fff;font-weight:800">✓</div>
+      </td>
+      <td style="padding:7px 0 7px 10px;font-size:14px;color:#374151">${name}</td>
+    </tr>`
     )
     .join('');
 
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:Inter,system-ui,-apple-system,sans-serif">
-  <div style="max-width:600px;margin:0 auto;padding:40px 20px">
+  const moreRow =
+    colleges.length > 8
+      ? `<tr><td></td><td style="padding:4px 0 0 10px;font-size:13px;color:#aeaeb2">+ ${colleges.length - 8} more</td></tr>`
+      : '';
 
-    <div style="text-align:center;margin-bottom:32px">
-      <span style="font-size:22px;font-weight:800;color:#1a1f36">due.college</span>
-    </div>
-
-    <div style="background:#fff;border-radius:24px;border:1px solid #e5e7eb;padding:32px">
-      <h1 style="font-size:22px;font-weight:800;color:#1a1f36;margin:0 0 8px">
-        Hi ${parentName} 👋
-      </h1>
-      <p style="color:#6b7280;font-size:15px;margin:0 0 24px">
-        <strong>${studentName}</strong> added you to their college deadline tracker on due.college.
-        You'll be able to see all their upcoming application deadlines in one place.
-      </p>
-
-      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:16px;padding:20px;margin-bottom:24px">
-        <p style="margin:0 0 10px;font-size:14px;font-weight:700;color:#166534">
-          ${studentName} is applying to ${colleges.length} school${colleges.length !== 1 ? 's' : ''}:
-        </p>
-        <ul style="list-style:none;margin:0;padding:0">
-          ${collegeList}
-          ${colleges.length > 8 ? `<li style="padding:5px 0;color:#6b7280;font-size:13px">+ ${colleges.length - 8} more</li>` : ''}
-        </ul>
-      </div>
-
-      <p style="color:#6b7280;font-size:14px;margin:0 0 20px">
-        Your read-only dashboard shows every deadline, color-coded by urgency.
-        You can also opt in for SMS reminders so you never have to wonder where things stand.
-      </p>
-
-      <a href="${dashboardUrl}" style="display:block;text-align:center;background:#ff6b6b;color:#fff;padding:16px 24px;border-radius:14px;font-weight:700;text-decoration:none;font-size:16px;margin-bottom:16px">
-        View ${studentName}'s Deadlines →
-      </a>
-
-      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px;margin-top:4px">
-        <p style="margin:0;font-size:13px;color:#92400e">
-          📱 <strong>Enable SMS reminders</strong> on the dashboard to get a text every time a deadline is approaching.
-        </p>
-      </div>
-    </div>
-
-    <div style="background:#f9fafb;border-radius:16px;padding:20px;margin-top:16px">
-      <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#374151">What is due.college?</p>
-      <p style="margin:0;font-size:13px;color:#6b7280">
-        A free deadline tracker for high school students applying to college. It tracks ED1, EA, RD, FAFSA,
-        and other critical deadlines — and sends reminders at 30, 14, 7, 3, and 1 day before each one.
-      </p>
-    </div>
-
-    <p style="text-align:center;font-size:12px;color:#9ca3af;margin-top:20px">
-      due.college · You were invited by ${studentName} ·
-      <a href="https://due.college/unsubscribe" style="color:#9ca3af">Unsubscribe</a>
+  const content = `
+    <!-- Headline -->
+    <h1 style="font-size:26px;font-weight:800;color:#1a1f36;margin:0 0 12px;letter-spacing:-0.5px">
+      Hi ${parentFirst} 👋
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.6">
+      <strong>${studentName}</strong> added you to their college deadline tracker on due.college.
+      You'll have a read-only view of every upcoming application deadline, color-coded by urgency.
     </p>
-  </div>
-</body>
-</html>`;
+
+    <!-- Schools card -->
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:18px;margin-bottom:24px">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#166534">
+        ${studentFirst} is applying to ${colleges.length} school${colleges.length !== 1 ? 's' : ''}:
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${collegeRows}
+        ${moreRow}
+      </table>
+    </div>
+
+    <!-- CTA -->
+    ${ctaButton(`View ${studentFirst}'s Deadlines →`, dashboardUrl, '#166534')}
+
+    ${divider}
+
+    <!-- SMS nudge -->
+    <div style="background:#fffbf0;border:1px solid #fed7aa;border-radius:14px;padding:16px">
+      <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#92400e">Enable SMS reminders</p>
+      <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.5">
+        Get a text every time a deadline is approaching — so you never have to wonder where things stand.
+        Turn it on in the dashboard.
+      </p>
+    </div>
+
+    <!-- What is due.college -->
+    <div style="margin-top:20px;padding:16px;background:#f5f5f7;border-radius:14px">
+      <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#374151">What is due.college?</p>
+      <p style="margin:0;font-size:12px;color:#6b7280;line-height:1.5">
+        A free deadline tracker for high school students applying to college. It tracks ED1, EA, RD, FAFSA, and other critical deadlines — and sends reminders before every one of them.
+      </p>
+    </div>
+
+    <!-- Sign-off -->
+    <p style="margin:20px 0 0;font-size:13px;color:#aeaeb2;text-align:center">
+      You were invited by ${studentName} &middot; <a href="https://due.college/unsubscribe" style="color:#aeaeb2;text-decoration:none">Unsubscribe</a>
+    </p>
+  `;
+
+  return emailShell({
+    title: `${studentName} invited you to view their college deadlines`,
+    accentColor: '#166534',
+    content,
+    unsubscribeUrl: 'https://due.college/unsubscribe',
+  });
 }

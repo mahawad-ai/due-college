@@ -85,7 +85,7 @@ export default function CircleJoinPage() {
                   Sign up for due.college to join this accountability circle and track college deadlines together.
                 </p>
                 <a
-                  href={`/signup?redirect_url=/circle/join/${code}`}
+                  href={`/start?redirect_url=/circle/join/${code}`}
                   className="block w-full py-4 rounded-[16px] bg-[#ff3b30] text-white text-[16px] font-[700] text-center transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
                 >
                   Sign up to join
@@ -93,7 +93,7 @@ export default function CircleJoinPage() {
                 <p className="text-[13px] text-[#86868b] mt-4">
                   Already have an account?{' '}
                   <a
-                    href={`/signin?redirect_url=/circle/join/${code}`}
+                    href={`/login?redirect_url=/circle/join/${code}`}
                     className="text-[#ff3b30] font-[600] hover:underline"
                   >
                     Sign in

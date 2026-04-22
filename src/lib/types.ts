@@ -131,6 +131,22 @@ export interface CollegeWithDeadlines extends College {
   deadlines: Deadline[];
 }
 
+/** Shared + custom deadlines normalized to one shape for the deadlines page */
+export interface NormalizedDeadline {
+  id: string;
+  college_id: string | null;
+  college: College | null;
+  college_name: string;
+  type: string;
+  date: string;
+  time: string | null;
+  notes: string | null;
+  is_custom: boolean;
+  status: { submitted: boolean; submitted_at: string | null } | null;
+  daysRemaining: number;
+  urgency: 'urgent' | 'upcoming' | 'later';
+}
+
 export type EssayType = 'common_app' | 'supplemental' | 'why_school' | 'additional' | 'other';
 export type EssayStatus = 'not_started' | 'draft' | 'reviewed' | 'final';
 export type RecommenderRole = 'teacher' | 'counselor' | 'employer' | 'mentor' | 'other';

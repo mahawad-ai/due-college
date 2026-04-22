@@ -20,7 +20,6 @@ export default function StartPage() {
             routing="path"
             path="/start"
             fallbackRedirectUrl="/dashboard"
-            afterSignUpUrl="/dashboard"
             appearance={{
               elements: {
                 rootBox: 'w-full max-w-md',

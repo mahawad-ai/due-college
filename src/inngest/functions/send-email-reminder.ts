@@ -2,8 +2,15 @@
 import { inngest } from '../client';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { Resend } from 'resend';
+import { createHmac } from 'crypto';
 import { renderDeadlineReminderEmail } from '@/emails/deadline-reminder';
 import { formatDate } from '@/lib/utils';
+
+function buildUnsubscribeUrl(userId: string): string {
+  const secret = process.env.CLERK_SECRET_KEY || 'fallback-secret';
+  const sig = createHmac('sha256', secret).update(userId).digest('hex');
+  return `https://due.college/api/unsubscribe?uid=${encodeURIComponent(userId)}&sig=${sig}`;
+}
 
 const getResend = () => new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
@@ -49,39 +56,54 @@ export const sendEmailReminder = inngest.createFunction(
   async ({ event, step }) => {
     const { userId, deadlineId, daysRemaining } = event.data;
     const supabase = createServerSupabaseClient();
+    const resend = getResend();
 
     // Get user info
-    const { data: user } = await step.run('get-user', async () => {
-      return supabase.from('users').select('email, name').eq('id', userId).single();
+    const user = await step.run('get-user', async () => {
+      const { data } = await supabase.from('users').select('email, name').eq('id', userId).single();
+      return data;
     });
 
-    if (!user?.data?.email) return { skipped: 'no user email' };
+    if (!user?.email) return { skipped: 'no user email' };
+
+    // Check notification preferences
+    const prefs = await step.run('get-prefs', async () => {
+      const { data } = await supabase
+        .from('notification_preferences')
+        .select('email_enabled')
+        .eq('user_id', userId)
+        .single();
+      return data;
+    });
+
+    if (prefs && prefs.email_enabled === false) return { skipped: 'email disabled' };
 
     // Get deadline with college
-    const { data: deadline } = await step.run('get-deadline', async () => {
-      return supabase
+    const deadline = await step.run('get-deadline', async () => {
+      const { data } = await supabase
         .from('deadlines')
         .select('*, college:colleges(name, city, state)')
         .eq('id', deadlineId)
         .single();
+      return data;
     });
 
-    if (!deadline?.data) return { skipped: 'deadline not found' };
+    if (!deadline) return { skipped: 'deadline not found' };
 
     // Check if already submitted
-    const { data: status } = await step.run('check-status', async () => {
-      return supabase
+    const status = await step.run('check-status', async () => {
+      const { data } = await supabase
         .from('user_deadline_status')
         .select('submitted')
         .eq('user_id', userId)
         .eq('deadline_id', deadlineId)
         .single();
+      return data;
     });
 
-    if (status?.data?.submitted) return { skipped: 'already submitted' };
+    if (status?.submitted) return { skipped: 'already submitted' };
 
-    const d = deadline.data;
-    const collegeName = d.college?.name || 'Unknown College';
+    const collegeName = deadline.college?.name || 'Unknown College';
     const checklist = getChecklist(daysRemaining);
 
     const urgency = daysRemaining <= 7 ? 'urgent' : daysRemaining <= 30 ? 'upcoming' : 'later';
@@ -90,16 +112,17 @@ export const sendEmailReminder = inngest.createFunction(
     await step.run('send-email', async () => {
       return resend.emails.send({
         from: 'due.college <reminders@due.college>',
-        to: user.data!.email,
-        subject: `⏰ ${collegeName} ${d.type} is in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}`,
+        to: user.email,
+        subject: `⏰ ${collegeName} ${deadline.type} is in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}`,
         html: renderDeadlineReminderEmail({
-          studentName: user.data!.name || 'there',
+          studentName: user.name || 'there',
           collegeName,
-          deadlineType: d.type,
-          deadlineDate: formatDate(d.date),
+          deadlineType: deadline.type,
+          deadlineDate: formatDate(deadline.date),
           daysRemaining,
           checklist,
           urgencyColor,
+          unsubscribeUrl: buildUnsubscribeUrl(userId),
         }),
       });
     });

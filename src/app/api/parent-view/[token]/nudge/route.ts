@@ -91,6 +91,7 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
     parentName: connection.parent_name,
     message,
     deadlineContext,
+    unsubscribeUrl: `https://due.college/settings`,
   });
 
   try {

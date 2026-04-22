@@ -16,56 +16,60 @@ export const sendSMSReminder = inngest.createFunction(
     const supabase = createServerSupabaseClient();
 
     // Get user info
-    const { data: user } = await step.run('get-user', async () => {
-      return supabase
+    const user = await step.run('get-user', async () => {
+      const { data } = await supabase
         .from('users')
         .select('phone, subscription_tier')
         .eq('id', userId)
         .single();
+      return data;
     });
 
-    // SMS only for plus/family subscribers
-    if (!user?.data?.phone) return { skipped: 'no phone' };
-    if (!['plus', 'family'].includes(user.data.subscription_tier)) {
+    // SMS only for plus/family subscribers with a phone number
+    if (!user?.phone) return { skipped: 'no phone' };
+    if (!['plus', 'family'].includes(user.subscription_tier)) {
       return { skipped: 'not a paid subscriber' };
     }
 
     // Check notification preferences
-    const { data: prefs } = await step.run('get-prefs', async () => {
-      return supabase
+    const prefs = await step.run('get-prefs', async () => {
+      const { data } = await supabase
         .from('notification_preferences')
         .select('sms_enabled')
         .eq('user_id', userId)
         .single();
+      return data;
     });
 
-    if (!prefs?.data?.sms_enabled) return { skipped: 'sms disabled' };
+    if (!prefs?.sms_enabled) return { skipped: 'sms disabled' };
 
     // Get deadline with college
-    const { data: deadline } = await step.run('get-deadline', async () => {
-      return supabase
+    const deadline = await step.run('get-deadline', async () => {
+      const { data } = await supabase
         .from('deadlines')
         .select('type, college:colleges(name)')
         .eq('id', deadlineId)
         .single();
+      return data;
     });
 
-    if (!deadline?.data) return { skipped: 'deadline not found' };
+    if (!deadline) return { skipped: 'deadline not found' };
 
     // Check if submitted
-    const { data: status } = await step.run('check-status', async () => {
-      return supabase
+    const status = await step.run('check-status', async () => {
+      const { data } = await supabase
         .from('user_deadline_status')
         .select('submitted')
         .eq('user_id', userId)
         .eq('deadline_id', deadlineId)
         .single();
+      return data;
     });
 
-    if (status?.data?.submitted) return { skipped: 'already submitted' };
+    if (status?.submitted) return { skipped: 'already submitted' };
 
-    const collegeName = deadline.data.college?.name || 'College';
-    const deadlineType = deadline.data.type;
+    const collegeName = deadline.college?.name || 'College';
+    const deadlineType = deadline.type;
 
     // Max 160 chars
     const message = `⏰ ${collegeName} ${deadlineType} due in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}. Check your list: due.college/dashboard`;
@@ -74,7 +78,7 @@ export const sendSMSReminder = inngest.createFunction(
       return twilioClient.messages.create({
         body: message.slice(0, 160),
         from: process.env.TWILIO_PHONE_NUMBER!,
-        to: user.data!.phone!,
+        to: user.phone!,
       });
     });
 

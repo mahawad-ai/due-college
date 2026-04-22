@@ -216,6 +216,18 @@ export default function CirclePage() {
 
   useEffect(() => {
     fetchCircle();
+
+    // Refetch every 30s while page is open
+    const interval = setInterval(fetchCircle, 30_000);
+
+    // Refetch instantly when user switches back to this tab
+    const onVisible = () => { if (document.visibilityState === 'visible') fetchCircle(); };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [fetchCircle]);
 
   // Update privacy mode

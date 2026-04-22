@@ -1,8 +1,11 @@
+import { emailShell, ctaButton, divider } from './base';
+
 interface SubmissionConfirmationEmailProps {
   studentName: string;
   collegeName: string;
   deadlineType: string;
   nextDeadline?: { college: string; type: string; date: string; daysRemaining: number };
+  unsubscribeUrl: string;
 }
 
 export function renderSubmissionConfirmationEmail({
@@ -10,62 +13,76 @@ export function renderSubmissionConfirmationEmail({
   collegeName,
   deadlineType,
   nextDeadline,
+  unsubscribeUrl,
 }: SubmissionConfirmationEmailProps): string {
   const motivationalLines = [
     'One down. Keep the momentum going.',
     'That took courage. The rest will come easier.',
-    "You're officially in the running. Go celebrate (briefly).",
+    "You're officially in the running.",
     "Every application submitted is a door that might open.",
     "That's one more school that gets to say yes.",
   ];
   const motivationalLine = motivationalLines[Math.floor(Math.random() * motivationalLines.length)];
 
   const nextDeadlineBlock = nextDeadline
-    ? `<div style="background:#fef3f2;border:1px solid #fecaca;border-radius:16px;padding:20px;margin:24px 0">
-        <p style="margin:0 0 4px;font-size:13px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Up Next</p>
-        <p style="margin:0;font-size:16px;font-weight:800;color:#1a1f36">${nextDeadline.college} — ${nextDeadline.type}</p>
-        <p style="margin:4px 0 0;font-size:14px;color:#ff6b6b;font-weight:600">${nextDeadline.date} · ${nextDeadline.daysRemaining} days away</p>
-      </div>`
-    : `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:16px;padding:20px;margin:24px 0;text-align:center">
-        <p style="margin:0;font-size:15px;font-weight:700;color:#166534">🎉 All caught up! No urgent deadlines.</p>
-      </div>`;
+    ? `
+    ${divider}
+    <p style="margin:0 0 10px;font-size:11px;font-weight:700;color:#aeaeb2;text-transform:uppercase;letter-spacing:0.8px">Up Next</p>
+    <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:14px;padding:18px">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td>
+            <p style="margin:0;font-size:16px;font-weight:800;color:#1a1f36">${nextDeadline.college}</p>
+            <p style="margin:4px 0 0;font-size:13px;color:#6b7280">${nextDeadline.type} &middot; ${nextDeadline.date}</p>
+          </td>
+          <td style="text-align:right;vertical-align:middle">
+            <div style="display:inline-block;background:#ff3b30;color:#fff;font-size:20px;font-weight:800;padding:7px 14px;border-radius:10px;letter-spacing:-0.5px;line-height:1">
+              ${nextDeadline.daysRemaining}d
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>`
+    : `
+    ${divider}
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:18px;text-align:center">
+      <p style="margin:0;font-size:15px;font-weight:700;color:#166534">All caught up — no urgent deadlines remaining.</p>
+    </div>`;
 
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:Inter,system-ui,-apple-system,sans-serif">
-  <div style="max-width:600px;margin:0 auto;padding:40px 20px">
-
-    <div style="text-align:center;margin-bottom:32px">
-      <span style="font-size:22px;font-weight:800;color:#1a1f36">due.college</span>
+  const content = `
+    <!-- Success mark -->
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="display:inline-block;width:64px;height:64px;background:#f0fdf4;border-radius:50%;line-height:64px;font-size:32px">✅</div>
     </div>
 
-    <div style="background:#fff;border-radius:24px;border:1px solid #e5e7eb;padding:32px;text-align:center">
-      <div style="font-size:56px;margin-bottom:16px">✅</div>
-      <h1 style="font-size:24px;font-weight:800;color:#1a1f36;margin:0 0 8px">
-        ${collegeName} ${deadlineType} submitted!
-      </h1>
-      <p style="color:#6b7280;font-size:15px;margin:0 0 4px">
-        Nice work, ${studentName}.
-      </p>
-      <p style="color:#6bcb77;font-size:15px;font-weight:600;margin:0">
-        ${motivationalLine}
-      </p>
-
-      ${nextDeadlineBlock}
-
-      <a href="https://due.college/dashboard" style="display:inline-block;background:#1a1f36;color:#fff;padding:14px 32px;border-radius:12px;font-weight:700;text-decoration:none;font-size:15px">
-        Back to Dashboard
-      </a>
-    </div>
-
-    <p style="text-align:center;font-size:12px;color:#9ca3af;margin-top:24px">
-      due.college · <a href="https://due.college/settings" style="color:#9ca3af">Settings</a>
+    <!-- Headline -->
+    <h1 style="font-size:26px;font-weight:800;color:#1a1f36;margin:0 0 6px;text-align:center;letter-spacing:-0.5px">
+      Submitted!
+    </h1>
+    <p style="margin:0 0 4px;font-size:16px;color:#374151;text-align:center;font-weight:600">
+      ${collegeName} &mdash; ${deadlineType}
     </p>
-  </div>
-</body>
-</html>`;
+    <p style="margin:0 0 28px;font-size:14px;color:#22c55e;text-align:center;font-weight:600">
+      ${motivationalLine}
+    </p>
+
+    ${nextDeadlineBlock}
+
+    <!-- CTA -->
+    <div style="margin-top:28px">
+      ${ctaButton('Back to Dashboard →', 'https://due.college/dashboard')}
+    </div>
+
+    <!-- Sign-off -->
+    <p style="margin:20px 0 0;font-size:13px;color:#aeaeb2;text-align:center">
+      Hi ${studentName} — we logged this when you marked the deadline complete.
+    </p>
+  `;
+
+  return emailShell({
+    title: `${collegeName} ${deadlineType} submitted`,
+    accentColor: '#22c55e',
+    content,
+    unsubscribeUrl,
+  });
 }
