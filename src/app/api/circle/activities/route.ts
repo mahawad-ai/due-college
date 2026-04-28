@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { getBestCircleId } from '@/lib/circle-membership';
 
 // GET /api/circle/activities
 export async function GET() {
@@ -8,14 +9,13 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const supabase = createServerSupabaseClient();
-  const { data: membership } = await supabase
-    .from('circle_members').select('circle_id').eq('user_id', user.id).single();
-  if (!membership) return NextResponse.json({ activities: [] });
+  const circleId = await getBestCircleId(supabase, user.id);
+  if (!circleId) return NextResponse.json({ activities: [] });
 
   const { data, error } = await supabase
     .from('circle_activities')
     .select('*, circle_reactions(reaction, user_id)')
-    .eq('circle_id', membership.circle_id)
+    .eq('circle_id', circleId)
     .order('created_at', { ascending: false })
     .limit(30);
 
@@ -40,12 +40,11 @@ export async function POST(req: NextRequest) {
   if (!activity_type || !content) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
 
   const supabase = createServerSupabaseClient();
-  const { data: membership } = await supabase
-    .from('circle_members').select('circle_id').eq('user_id', user.id).single();
-  if (!membership) return NextResponse.json({ error: 'Not in a circle' }, { status: 404 });
+  const circleId = await getBestCircleId(supabase, user.id);
+  if (!circleId) return NextResponse.json({ error: 'Not in a circle' }, { status: 404 });
 
   const { data, error } = await supabase.from('circle_activities').insert({
-    circle_id: membership.circle_id,
+    circle_id: circleId,
     user_id: user.id,
     display_name: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Someone',
     avatar_url: user.imageUrl || null,

@@ -5,6 +5,7 @@
  */
 
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { getBestCircleId } from '@/lib/circle-membership';
 import { CircleActivityType } from '@/lib/types';
 
 interface AutoPostArgs {
@@ -24,17 +25,12 @@ export async function postCircleActivity(args: AutoPostArgs): Promise<void> {
   try {
     const supabase = createServerSupabaseClient();
 
-    // Find circle membership
-    const { data: membership } = await supabase
-      .from('circle_members')
-      .select('circle_id')
-      .eq('user_id', args.userId)
-      .single();
-
-    if (!membership) return; // Not in a circle — skip silently
+    // Find the user's best circle (handles multi-membership edge case)
+    const circleId = await getBestCircleId(supabase, args.userId);
+    if (!circleId) return; // Not in a circle — skip silently
 
     await supabase.from('circle_activities').insert({
-      circle_id: membership.circle_id,
+      circle_id: circleId,
       user_id: args.userId,
       display_name: args.displayName,
       avatar_url: args.avatarUrl,

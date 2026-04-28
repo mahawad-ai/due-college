@@ -25,6 +25,34 @@ export async function POST(req: NextRequest) {
     .from('circle_members').select('*', { count: 'exact', head: true }).eq('circle_id', circle.id);
   if ((count || 0) >= 8) return NextResponse.json({ error: 'Circle is full (max 8 members)' }, { status: 409 });
 
+  // If the joiner has a solo circle they auto-created (only them, they're the creator),
+  // clean it up so they're not in two circles at once.
+  const { data: existingMemberships } = await supabase
+    .from('circle_members')
+    .select('circle_id')
+    .eq('user_id', user.id);
+
+  if (existingMemberships && existingMemberships.length > 0) {
+    for (const m of existingMemberships) {
+      if (m.circle_id === circle.id) continue; // already in the target circle
+      // Check if this is a solo auto-created circle
+      const { count: memberCount } = await supabase
+        .from('circle_members')
+        .select('*', { count: 'exact', head: true })
+        .eq('circle_id', m.circle_id);
+      const { data: soloCircle } = await supabase
+        .from('circles')
+        .select('created_by')
+        .eq('id', m.circle_id)
+        .single();
+      if ((memberCount || 0) <= 1 && soloCircle?.created_by === user.id) {
+        // Solo circle — delete it
+        await supabase.from('circle_members').delete().eq('circle_id', m.circle_id);
+        await supabase.from('circles').delete().eq('id', m.circle_id);
+      }
+    }
+  }
+
   const { error: joinErr } = await supabase.from('circle_members').upsert({
     circle_id: circle.id,
     user_id: user.id,

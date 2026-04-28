@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { getBestCircleId } from '@/lib/circle-membership';
 import { Resend } from 'resend';
 import { renderCircleInviteEmail } from '@/emails/circle-invite';
 
@@ -36,22 +37,23 @@ export async function POST(req: NextRequest) {
     .eq('user_id', user.id)
     .maybeSingle();
 
-  // Get the sender's circle
-  const { data: membership } = await supabase
-    .from('circle_members')
-    .select('circle_id, display_name')
-    .eq('user_id', user.id)
-    .limit(1)
-    .maybeSingle();
-
-  if (!membership) {
+  // Get the sender's best circle (prefers group circles over solo)
+  const circleId = await getBestCircleId(supabase, user.id);
+  if (!circleId) {
     return NextResponse.json({ error: 'You need a Circle first.' }, { status: 400 });
   }
+
+  const { data: memberRow } = await supabase
+    .from('circle_members')
+    .select('display_name')
+    .eq('circle_id', circleId)
+    .eq('user_id', user.id)
+    .maybeSingle();
 
   const { data: circle } = await supabase
     .from('circles')
     .select('invite_code')
-    .eq('id', membership.circle_id)
+    .eq('id', circleId)
     .single();
 
   if (!circle) {
@@ -59,7 +61,7 @@ export async function POST(req: NextRequest) {
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://due.college';
-  const senderName = membership.display_name || user.firstName || 'A friend';
+  const senderName = memberRow?.display_name || user.firstName || 'A friend';
 
   // Prefer handle-based URL, fallback to invite code URL
   const inviteUrl = handleRow?.handle

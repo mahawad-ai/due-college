@@ -31,9 +31,10 @@ export async function POST(req: NextRequest) {
 
   const supabase = createServerSupabaseClient();
 
-  // Ensure user record exists
+  // Ensure user record exists (use real Clerk email, not body which only has collegeIds)
+  const userEmail = user.emailAddresses?.[0]?.emailAddress || '';
   await supabase.from('users').upsert(
-    { id: user.id, email: body.email || '' },
+    { id: user.id, email: userEmail },
     { onConflict: 'id', ignoreDuplicates: true }
   );
 

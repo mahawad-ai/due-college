@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { getBestCircleId } from '@/lib/circle-membership';
 
 // GET /api/circle — get or create user's circle with members, activities, challenges
 export async function GET() {
@@ -9,16 +10,10 @@ export async function GET() {
 
   const supabase = createServerSupabaseClient();
 
-  // Find circle where user is a member
-  const { data: membership } = await supabase
-    .from('circle_members')
-    .select('circle_id')
-    .eq('user_id', user.id)
-    .single();
+  // Find the best circle for this user (handles multi-membership edge case)
+  let circleId: string | null = await getBestCircleId(supabase, user.id);
 
-  let circleId: string;
-
-  if (!membership) {
+  if (!circleId) {
     // Create a new circle and add user as first member
     const { data: newCircle, error: createErr } = await supabase
       .from('circles')
@@ -34,8 +29,6 @@ export async function GET() {
       display_name: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.emailAddresses[0]?.emailAddress,
       avatar_url: user.imageUrl || null,
     });
-  } else {
-    circleId = membership.circle_id;
   }
 
   // Fetch circle
@@ -105,8 +98,9 @@ export async function PATCH(req: NextRequest) {
   const { privacy_mode } = await req.json();
   const supabase = createServerSupabaseClient();
 
-  const { data: membership } = await supabase
-    .from('circle_members').select('circle_id').eq('user_id', user.id).single();
+  const { data: memberships } = await supabase
+    .from('circle_members').select('circle_id').eq('user_id', user.id);
+  const membership = memberships?.[0] ?? null;
   if (!membership) return NextResponse.json({ error: 'No circle found' }, { status: 404 });
 
   const { data, error } = await supabase
