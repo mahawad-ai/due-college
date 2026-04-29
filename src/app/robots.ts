@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/dashboard', '/settings', '/invite', '/api/'],
     },
-    sitemap: 'https://due.college/sitemap.xml',
+    sitemap: 'https://www.due.college/sitemap.xml',
   };
 }
