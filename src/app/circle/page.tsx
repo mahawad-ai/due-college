@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import TopNav from '@/components/TopNav';
 import MobileNav from '@/components/MobileNav';
 import {
@@ -173,7 +174,16 @@ const PRIVACY_ORDER: CirclePrivacyMode[] = ['effort_only', 'open', 'private'];
 // ── Main Page ──────────────────────────────────────────────────
 
 export default function CirclePage() {
-  const { user } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
+  const router = useRouter();
+
+  // Redirect unauthenticated users — middleware handles this for fresh loads,
+  // but this catches client-side navigation to /circle while logged out.
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/login?redirect_url=/circle');
+    }
+  }, [isLoaded, isSignedIn, router]);
 
   const [data, setData] = useState<CircleData | null>(null);
   const [loading, setLoading] = useState(true);

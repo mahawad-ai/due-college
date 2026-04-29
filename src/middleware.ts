@@ -19,6 +19,12 @@ const isProtectedRoute = createRouteMatcher([
   '/profile(.*)',
   '/suggest(.*)',
   '/discover(.*)',
+  // Pages missing from original list — now handled by middleware so
+  // redirect_url is automatically preserved on login redirect
+  '/circle(.*)',
+  '/deadlines(.*)',
+  '/strategy(.*)',
+  '/onboarding(.*)',
 ]);
 
 export default clerkMiddleware((auth, req) => {
