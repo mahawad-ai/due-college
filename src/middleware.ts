@@ -27,7 +27,11 @@ const isProtectedRoute = createRouteMatcher([
   '/onboarding(.*)',
 ]);
 
+const isPublicWebhook = createRouteMatcher(['/api/webhooks(.*)']);
+
 export default clerkMiddleware((auth, req) => {
+  // Webhook routes must be publicly reachable — Clerk servers call them
+  if (isPublicWebhook(req)) return;
   if (isProtectedRoute(req)) {
     auth().protect();
   }
