@@ -56,7 +56,9 @@ export async function GET() {
     .eq('circle_id', circleId)
     .order('created_at', { ascending: false });
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://due.college';
+  // Always use the canonical production URL — never the Vercel preview domain
+  const rawBase = process.env.NEXT_PUBLIC_APP_URL || 'https://www.due.college';
+  const baseUrl = rawBase.includes('vercel.app') ? 'https://www.due.college' : rawBase;
 
   // Prefer handle-based invite URL if the user has claimed a handle
   const { data: handleRow } = await supabase

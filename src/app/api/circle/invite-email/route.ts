@@ -60,7 +60,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Circle not found.' }, { status: 404 });
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://due.college';
+  // Always use the canonical production URL — never the Vercel preview domain
+  const rawBase = process.env.NEXT_PUBLIC_APP_URL || 'https://www.due.college';
+  const baseUrl = rawBase.includes('vercel.app') ? 'https://www.due.college' : rawBase;
   const senderName = memberRow?.display_name || user.firstName || 'A friend';
 
   // Prefer handle-based URL, fallback to invite code URL
