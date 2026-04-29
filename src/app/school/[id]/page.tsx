@@ -191,17 +191,32 @@ export default function SchoolDetailPage() {
   return (
     <>
       <TopNav />
+      {/* Sticky sign-up banner for logged-out visitors */}
+      {!isSignedIn && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1f36] border-t border-white/10 px-4 py-3 flex items-center justify-between gap-3 sm:px-6">
+          <p className="text-sm text-white font-medium leading-snug">
+            <span className="font-[700]">Never miss a deadline.</span>{' '}
+            <span className="text-white/70 hidden sm:inline">Track {college.name} deadlines — free for every student.</span>
+          </p>
+          <a
+            href={`/start?college=${id}`}
+            className="flex-shrink-0 bg-[#ff3b30] text-white text-sm font-[700] px-4 py-2 rounded-[10px] hover:opacity-90 transition-opacity whitespace-nowrap"
+          >
+            Get started free →
+          </a>
+        </div>
+      )}
       <main className="min-h-screen bg-white pt-[90px] pb-28">
         <div className="max-w-container mx-auto px-4 py-6">
           {/* Back */}
           <Link
-            href="/dashboard"
+            href={isSignedIn ? '/dashboard' : '/'}
             className="inline-flex items-center gap-1.5 text-[#86868b] hover:text-[#1d1d1f] text-sm font-medium mb-6 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to dashboard
+            {isSignedIn ? 'Back to dashboard' : 'Back to home'}
           </Link>
 
           {/* College Header */}

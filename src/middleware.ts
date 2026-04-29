@@ -5,7 +5,7 @@ const isProtectedRoute = createRouteMatcher([
   '/settings(.*)',
   '/invite(.*)',
   '/upgrade(.*)',
-  '/school/(.*)',
+  // '/school/(.*)' — intentionally public for SEO (page handles auth internally)
   '/activities(.*)',
   '/essays(.*)',
   '/recommendations(.*)',
